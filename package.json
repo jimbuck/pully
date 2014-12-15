@@ -1,7 +1,11 @@
 {
   "name": "pully",
   "version": "0.0.1",
-  "description": "A very simple YouTube video downloader.",
+  "description": "A very simple YouTube downloader.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JimmyBoh/pully.git"
+  },
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -10,13 +14,24 @@
     "pully": "./bin/pully.js"
   },
   "author": "Jim Buck",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "colors": "^1.0.3",
     "fluent-ffmpeg": "^2.0.0-rc3",
     "progress-bar": "^0.1.1",
     "sanitize-filename": "^1.1.1",
-    "underscore": "^1.7.0",
+    "underscore": "~1.6.0",
     "ytdl-core": "^0.2.4"
-  }
+  },
+  "bugs": {
+    "url": "https://github.com/JimmyBoh/pully/issues"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "youtube",
+    "download",
+    "cli",
+    "ffmpeg"
+  ],
+  "preferGlobal":true
 }
