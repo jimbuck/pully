@@ -1,0 +1,22 @@
+{
+  "name": "pully",
+  "version": "0.0.1",
+  "description": "A very simple YouTube video downloader.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "pully": "./bin/pully.js"
+  },
+  "author": "Jim Buck",
+  "license": "ISC",
+  "dependencies": {
+    "colors": "^1.0.3",
+    "fluent-ffmpeg": "^2.0.0-rc3",
+    "progress-bar": "^0.1.1",
+    "sanitize-filename": "^1.1.1",
+    "underscore": "^1.7.0",
+    "ytdl-core": "^0.2.4"
+  }
+}
