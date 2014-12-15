@@ -1,2 +1,2 @@
-console.warn('This module is meant to be used by cli. If you want to use pull-youtube programmatically, visit https://github.com/fent/node-ytdl-core');
-module.exports = require('pull-youtube');
+console.warn('This module is meant to be used by cli. Downloading programatically will be available in the future.');
+module.exports = require('./bin/pully.js');
