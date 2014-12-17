@@ -1,14 +1,9 @@
 #!/usr/bin/env node
 
-var fs = require('fs');
-var _ = require('underscore');
-
-var ytdl = require('ytdl-core');
-var sanitize = require("sanitize-filename");
-require('colors');
+var commander = require('commander');
 
 var util = require('../lib/utils.js');
-var Downloader = require('../lib/downloader.js');
+var Pully = require('../lib/pully.js');
 
 (function () {
 
@@ -29,11 +24,13 @@ var Downloader = require('../lib/downloader.js');
         url = 'https://www.youtube.com/watch?v=' + url;
     }
 
-    var downloader = new Downloader(type, type);
+    var pully = new Pully(type, type);
 
-    downloader.download(url, function(videoPath){
-        console.log();
+    // Test URL: https://www.youtube.com/watch?v=ZVOmv_vMIbA
+
+    pully.download(url, function(videoPath){
         console.log(videoPath);
+        console.log();
     })
 
 })();
