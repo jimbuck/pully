@@ -33,5 +33,5 @@
     "cli",
     "ffmpeg"
   ],
-  "preferGlobal":true
+  "preferGlobal": true
 }
