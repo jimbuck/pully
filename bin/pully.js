@@ -8,13 +8,16 @@ var errorCodes = require('../data/error-codes');
 (function () {
 
     // Test URL: https://www.youtube.com/watch?v=ZVOmv_vMIbA
-    
+
     var options = parseArgs(process.argv);
 
     pully(options, function (err, videoPath) {
-        var data = err || videoPath;
-        
-        console.log(data);
+
+        if(err)
+            console.error(err);
+        else
+            console.log(videoPath);
+
         console.log('');
     });
 
@@ -62,7 +65,7 @@ var errorCodes = require('../data/error-codes');
         // Ensure that each has a value...
         options.preset = options.preset || 'hd';
         options.count = options.count || 3;
-        
+
         return options;
     }
 
