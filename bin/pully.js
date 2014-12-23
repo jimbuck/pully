@@ -4,6 +4,7 @@ var _ = require('underscore');
 var util = require('../lib/utils');
 var pully = require('../lib/main');
 var errorCodes = require('../data/error-codes');
+require('colors');
 
 (function () {
 
@@ -11,12 +12,12 @@ var errorCodes = require('../data/error-codes');
 
     var options = parseArgs(process.argv);
 
-    pully(options, function (err, videoPath) {
+    pully(options, function (err, info, videoPath) {
 
         if(err)
             console.error(err);
         else
-            console.log(videoPath);
+            console.log('Download complete for "'+ info.title.yellow.bold +'"!\n    (' + videoPath.grey.bold + ')');
 
         console.log('');
     });
@@ -62,9 +63,8 @@ var errorCodes = require('../data/error-codes');
             }
         }
 
-        // Ensure that each has a value...
-        options.preset = options.preset || 'hd';
-        options.count = options.count || 3;
+        // Set a flag to indicate we should display progress...
+        options.cli = true;
 
         return options;
     }
