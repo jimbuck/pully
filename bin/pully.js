@@ -17,7 +17,7 @@ require('colors');
         if(err)
             console.error(err);
         else
-            console.log('Download complete for "'+ info.title.yellow.bold +'"!\n    (' + videoPath.grey.bold + ')');
+            console.log('Download complete for "'+ info.title.yellow.bold +'"! (' + videoPath.grey.bold + ')');
 
         console.log('');
     });
