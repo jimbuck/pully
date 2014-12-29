@@ -21,6 +21,7 @@
     "progress": "*",
     "sanitize-filename": "*",
     "underscore": "^1.7.0",
+    "validator": "^3.27.0",
     "ytdl-core": "*"
   },
   "bugs": {

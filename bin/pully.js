@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 
 var _ = require('underscore');
+var validator = require('validator');
+require('colors');
+
 var util = require('../lib/utils');
 var pully = require('../lib/main');
 var errorCodes = require('../data/error-codes');
-require('colors');
 
 (function () {
 
@@ -17,7 +19,7 @@ require('colors');
         if(err)
             console.error(err);
         else
-            console.log('Download complete for "'+ info.title.yellow.bold +'"! (' + videoPath.grey.bold + ')');
+            console.log('Download complete for "' + info.title.yellow.bold + '"! (' + videoPath.grey.bold + ')');
 
         console.log('');
     });
@@ -37,7 +39,9 @@ require('colors');
             url: args[2]
         };
 
-        // TODO: Validate URL format.
+        if(isInvalidYoutubeUrl(options.url)) {
+            exit('"' + options.url + '" is invalid, please try a different URL!', errorCodes.INVLAID_URL);
+        }
 
         // If at least one argument is preset...
         if(args.length >= 4) {
@@ -50,7 +54,7 @@ require('colors');
         // If a second argument is present...
         if(args.length === 5) {
 
-            if(isNaN(args[3])){
+            if(isNaN(args[3])) {
                 if(typeof options.preset === 'undefined')
                     options.preset = args[3];
                 else
@@ -81,6 +85,13 @@ require('colors');
         console.log('-V, --version  output the version number');
         console.log('');
         process.exit(errorCodes.SUCCESS);
+    }
+
+    function isInvalidYoutubeUrl(url) {
+        return !validator.isURL(url, {
+            host_whitelist: ['www.youtube.com', 'youtube.com', 'youtu.be'],
+            allow_underscores: true
+        });
     }
 
     function exit(message, code) {

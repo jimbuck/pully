@@ -1,2 +1,2 @@
-console.warn('This module is a drastic work in progress. Module support will be available in the future, but has not been tested yet.');
+console.info('This module is a work in progress. Module documentation will be available in the future, but in the meantime check out ./bin/pully.js for an example implementation.');
 module.exports = require('./lib/main.js');
