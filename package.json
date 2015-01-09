@@ -19,9 +19,12 @@
     "colors": "*",
     "fluent-ffmpeg": "*",
     "progress": "*",
+    "prompt": "*",
+    "request": "*",
     "sanitize-filename": "*",
-    "underscore": "^1.7.0",
-    "validator": "^3.27.0",
+    "underscore": "*",
+    "validator": "*",
+    "youtube-api": "*",
     "ytdl-core": "*"
   },
   "bugs": {
