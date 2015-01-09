@@ -4,6 +4,12 @@
 		"videoEncoding" : "mp4",
 		"audioEncoding" : "mp4"
 	},
+	"2k" : {
+		"minResolution" : 1080,
+		"maxResolution" : 1440,
+		"videoEncoding" : "mp4",
+		"audioEncoding" : "mp4"
+	},
 	"4k" : {
 		"minResolution" : 1080,
 		"maxResolution" : 2160,
