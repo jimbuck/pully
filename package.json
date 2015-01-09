@@ -1,7 +1,7 @@
 {
   "name": "pully",
-  "version": "0.0.1",
-  "description": "A very simple YouTube downloader.",
+  "version": "1.0.1",
+  "description": "A very simple HD YouTube downloader.",
   "repository": {
     "type": "git",
     "url": "https://github.com/JimmyBoh/pully.git"
