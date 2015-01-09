@@ -6,6 +6,7 @@ require('colors');
 
 var util = require('../lib/utils');
 var pully = require('../lib/main');
+var PresetManager = require('../lib/preset-manager');
 var errorCodes = require('../data/error-codes');
 
 (function () {
@@ -28,6 +29,7 @@ var errorCodes = require('../data/error-codes');
         // If no arguments, print the help message...
         if(args.length < 3) {
             printHelp();
+            return;
         }
 
         // If too many errors, exit early...
@@ -38,6 +40,11 @@ var errorCodes = require('../data/error-codes');
         var options = {
             url: args[2]
         };
+
+        if(options.url === '-h' || options.url === '--help' || options.url === '/?'){
+            printHelp();
+            return;
+        }
 
         if(isInvalidYoutubeUrl(options.url)) {
             exit('"' + options.url + '" is invalid, please try a different URL!', errorCodes.INVLAID_URL);
@@ -74,15 +81,19 @@ var errorCodes = require('../data/error-codes');
     }
 
     function printHelp() {
+
+        var presets = new PresetManager();
+
         console.log('');
-        console.log('Downloads a specified video or playlist in the specified format.')
+        console.log('Downloads a specified video or playlist in the specified format.'.green.bold)
         console.log('');
-        console.log('Usage: pully <url> [preset] [count]');
+        console.log('Usage:');
         console.log('');
-        console.log('Options:');
+        console.log('  pully <url> [preset] [count]'.yellow.bold);
         console.log('');
-        console.log('-h, --help     output usage information');
-        console.log('-V, --version  output the version number');
+        console.log('Available Presets:');
+        console.log('');
+        console.log('  ' + presets.available.join(', ').cyan.bold);
         console.log('');
         process.exit(errorCodes.SUCCESS);
     }
@@ -96,7 +107,7 @@ var errorCodes = require('../data/error-codes');
 
     function exit(message, code) {
         console.log('');
-        console.error(message);
+        console.error(message.red.bold);
         console.log('');
         process.exit(code);
     }
