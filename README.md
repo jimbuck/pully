@@ -1,5 +1,4 @@
-pully
-=====
+# pully
 
 A simple CLI for downloading high quality YouTube videos!
 
@@ -7,15 +6,15 @@ This tool allows the downloading of YouTube videos of `1080p` and higher qualiti
 
 Further documentation for this tool will be added later, but expect a basic search functionality as well as batch download (playlists, `n` most recent, segmented videos, etc).
 
-# CLI
+## CLI
 
-## Installation
+### Installation
 
 ```bash
 npm install -g pully
 ```
 
-## Usage
+### Usage
 
 ```bash
 pully <url> <preset>
@@ -23,7 +22,7 @@ pully <url> <preset>
 
 Downloads a specified video in the specified format. The file is named after the title and placed in a folder named after the publisher.
 
-# Presets
+## Presets
 
 Presets are used in the CLI version to simplify getting the video you want. The actual preset data can be found in `./data/presets.json`, but plans to make them more customizable will be coming soon. Presets are available in the module usage as well!
 
@@ -34,16 +33,16 @@ Presets are used in the CLI version to simplify getting the video you want. The 
 - `24` This will only download videos with a framerate of `24fps`.
 - `audio` This will only download the audio.
 
-# Node Module
+## Node Module
 
-## Installation
+### Installation
 
 ```bash
 npm install pully
 
 ```
 
-## Usage
+### Usage
 
 ```js
 var pully = require('pully')
@@ -58,7 +57,7 @@ pully(options, function(err, info, filePath){
 });
 ```
 
-# License
+## License
 
 The MIT License (MIT)
 
