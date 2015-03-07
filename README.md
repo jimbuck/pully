@@ -61,6 +61,13 @@ pully(options, function(err, info, filePath){
 });
 ```
 
+## Donating
+
+Help fund this project by donating, or just buy me a beer!
+
+[![Support via Gratipay](https://cdn.rawgit.com/gratipay/gratipay-badge/2.3.0/dist/gratipay.svg)](https://gratipay.com/JimmyBoh/)
+
+
 ## License
 
 The MIT License (MIT)
