@@ -8,7 +8,7 @@
   },
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jasmine"
   },
   "bin": {
     "pully": "./bin/pully.js"
@@ -30,7 +30,10 @@
   "bugs": {
     "url": "https://github.com/JimmyBoh/pully/issues"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "jasmine": "^2.2.1",
+    "jasmine-core": "^2.2.0"
+  },
   "keywords": [
     "youtube",
     "download",
