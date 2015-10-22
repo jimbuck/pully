@@ -1,2 +1,4 @@
 
-module.exports = require('./lib/main.js');
+var pully = require('./lib/core.js');
+
+module.exports = pully;

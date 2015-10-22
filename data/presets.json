@@ -1,36 +1,38 @@
 {
+  "sd": {
+    "maxResolution": 480,
+    "videoIn": "mp4",
+    "audioIn": "mp4"
+  },
   "hd": {
     "maxResolution": 1080,
-    "videoEncoding": "mp4",
-    "audioEncoding": "mp4"
+    "videoIn": "mp4",
+    "audioIn": "mp4"
   },
   "2k": {
     "minResolution": 1080,
     "maxResolution": 1440,
-    "videoEncoding": "mp4",
-    "audioEncoding": "mp4"
+    "videoIn": "mp4",
+    "audioIn": "mp4"
   },
   "4k": {
     "minResolution": 1080,
     "maxResolution": 2160,
-    "videoEncoding": "mp4",
-    "audioEncoding": "mp4"
+    "videoIn": "mp4",
+    "audioIn": "mp4"
   },
   "hfr": {
     "minFps": 48,
-    "videoEncoding": "mp4",
-    "audioEncoding": "mp4"
+    "videoIn": "mp4",
+    "audioIn": "mp4"
   },
   "24": {
     "minFps": 24,
     "maxFps": 24,
-    "videoEncoding": "mp4",
-    "audioEncoding": "mp4"
+    "videoIn": "mp4",
+    "audioIn": "mp4"
   },
   "audio": {
-    "audioEncoding": "mp4"
-  },
-  "mp3": {
-    "audioEncoding": "mp3"
+    "audioIn": "mp4"
   }
 }

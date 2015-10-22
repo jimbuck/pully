@@ -5,7 +5,7 @@ var validator = require('validator');
 require('colors');
 
 var util = require('../lib/utils');
-var pully = require('../lib/main');
+var pully = require('../index');
 var PresetManager = require('../lib/preset-manager');
 var errorCodes = require('../data/error-codes');
 
@@ -18,9 +18,14 @@ var errorCodes = require('../data/error-codes');
     pully(options, function (err, info, videoPath) {
 
         if(err)
-            console.error(err);
+        {
+          console.error(err.message.red.bold);
+          process.exit(err.code);
+        }
         else
-            console.log('Download complete for "' + info.title.yellow.bold + '"! (' + videoPath.grey.bold + ')');
+        {
+          console.log('Download complete for "' + info.title.yellow.bold + '"! (' + videoPath.grey.bold + ')');
+        }
 
         console.log('');
     });

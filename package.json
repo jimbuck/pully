@@ -1,6 +1,6 @@
 {
   "name": "pully",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "A very simple HD YouTube downloader.",
   "repository": {
     "type": "git",
@@ -13,7 +13,7 @@
   "bin": {
     "pully": "./bin/pully.js"
   },
-  "author": "Jim Buck",
+  "author": "Jim Buck <jim@jimmyboh.com>",
   "license": "MIT",
   "dependencies": {
     "colors": "*",
@@ -31,7 +31,7 @@
     "url": "https://github.com/JimmyBoh/pully/issues"
   },
   "devDependencies": {
-    "jasmine": "^2.2.1",
+    "jasmine": "^2.3.2",
     "jasmine-core": "^2.2.0"
   },
   "keywords": [
