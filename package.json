@@ -16,16 +16,16 @@
   "author": "Jim Buck <jim@jimmyboh.com>",
   "license": "MIT",
   "dependencies": {
-    "colors": "*",
-    "fluent-ffmpeg": "*",
-    "progress": "*",
-    "prompt": "*",
-    "request": "*",
-    "sanitize-filename": "*",
-    "underscore": "*",
-    "validator": "*",
-    "youtube-api": "*",
-    "ytdl-core": "*"
+    "colors": "^1.1.2",
+    "fluent-ffmpeg": "^2.0.1",
+    "progress": "^1.1.8",
+    "prompt": "^0.2.14",
+    "request": "^2.65.0",
+    "sanitize-filename": "^1.4.5",
+    "underscore": "^1.8.3",
+    "validator": "^4.2.0",
+    "youtube-api": "^1.2.1",
+    "ytdl-core": "^0.7.3"
   },
   "bugs": {
     "url": "https://github.com/JimmyBoh/pully/issues"
