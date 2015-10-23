@@ -1,5 +1,7 @@
 # pully
 
+[![Dependency Status](https://david-dm.org/jimmyboh/pully.svg)](https://david-dm.org/jimmyboh/pully) [![Build Status](https://travis-ci.org/JimmyBoh/pully.svg)](https://travis-ci.org/JimmyBoh/pully) [![npm version](https://badge.fury.io/js/pully.svg)](https://badge.fury.io/js/pully)
+
 A simple CLI for downloading high quality Youtube videos!
 
 This tool allows the downloading of Youtube videos of `1080p` and higher qualities. The video and audio is separate, so this combines them after downloading both.
