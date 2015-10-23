@@ -45,7 +45,6 @@ Presets are used in the CLI version to simplify getting the video you want. The 
 
 ```bash
 npm install pully
-
 ```
 
 ### Usage
