@@ -6,5 +6,5 @@ node_js:
   - "0.11"
   - "0.10"
 addons:
-  code_climate:
-      repo_token: f42605c7dcdac93756a6e12c01eadb1c016582393ff0eb54c019497a0b281de9
+    code_climate:
+        repo_token: b3c733b078d215a890f6b6ef65ba6098d1ebf1a6604ed9a911f0f58f5044b322
