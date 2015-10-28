@@ -1,0 +1,17 @@
+{
+    "rules": {
+        "indent": [2, 2],
+        "quotes": [2, "single"],
+        "linebreak-style": [1, "windows"],
+        "semi": [2, "always"],
+        "eqeqeq": [2, "smart"],
+        "curly": [2, "all"],
+        "comma-dangle": [2, "never"],
+        "no-console": 0
+    },
+    "env": {
+        "node": true,
+        "jasmine": true
+    },
+    "extends": "eslint:recommended"
+}

@@ -8,7 +8,9 @@
   },
   "main": "index.js",
   "scripts": {
-    "test": "jasmine"
+    "test": "istanbul cover -x \"*.spec.js\" --print detail ./node_modules/jasmine-node/bin/jasmine-node spec && codeclimate-test-reporter < ./coverage/lcov.info",
+    "coverage-all": "istanbul cover --print detail ./node_modules/jasmine-node/bin/jasmine-node spec",
+    "lint": "eslint -c ./.eslintrc --fix ./"
   },
   "bin": {
     "pully": "./bin/pully.js"
@@ -31,8 +33,11 @@
     "url": "https://github.com/JimmyBoh/pully/issues"
   },
   "devDependencies": {
-    "jasmine": "^2.3.2",
-    "jasmine-core": "^2.2.0"
+    "codeclimate-test-reporter": "^0.1.1",
+    "eslint": "^1.7.3",
+    "istanbul": "^0.4.0",
+    "jasmine-node": "^1.14.5",
+    "proxyquire": "^1.7.3"
   },
   "keywords": [
     "youtube",

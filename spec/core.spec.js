@@ -7,14 +7,10 @@ describe('Core', function () {
 
     Downloader = function () { };
 
-    Downloader.prototype.filePath = 'temp/test.test';
-
-    Downloader.prototype.getDownloadPath = function (format, info, options) {
-      return Downloader.prototype.filePath;
-    };
+    var filePath = 'temp/test.test';
 
     Downloader.prototype.download = function (options, callback) {
-      callback(null, options, Downloader.prototype.filePath);
+      callback(null, options, filePath);
     };
   });
 
@@ -43,7 +39,7 @@ describe('Core', function () {
     pully({
       url: 'http://www.jimmyboh.com',
       preset: 'hd'
-    }, function (err, info, path) {
+    }, function (err) {
       expect(err).toBeDefined();
       done();
     }, Downloader);
@@ -55,12 +51,12 @@ describe('Core', function () {
       url: 'https://www.youtube.com/watch?v=1F5Ad0dhScQ'
     };
 
-    Downloader.prototype.download = function (options, callback) {
+    Downloader.prototype.download = function (options) {
       expect(options.preset).toBe('hd');
       done();
-    }
+    };
 
-    pully(options, function (err, info, path) { }, Downloader);
+    pully(options, null, Downloader);
   });
 
   it('should execute a callback with filepath when download is complete', function (done) {
@@ -68,7 +64,7 @@ describe('Core', function () {
     pully({
       url: 'https://www.youtube.com/watch?v=1F5Ad0dhScQ',
       preset: 'hd'
-    }, function (err, info, path) {
+    }, function (err) {
       expect(err).toBeFalsy();
       done();
     }, Downloader);

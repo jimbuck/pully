@@ -1,6 +1,10 @@
 # pully
 
-[![Dependency Status](https://david-dm.org/jimmyboh/pully.svg)](https://david-dm.org/jimmyboh/pully) [![Build Status](https://travis-ci.org/JimmyBoh/pully.svg)](https://travis-ci.org/JimmyBoh/pully) [![npm version](https://badge.fury.io/js/pully.svg)](https://badge.fury.io/js/pully)
+[![Travis-CI](https://img.shields.io/travis/JimmyBoh/pully.svg?style=flat-square)](https://travis-ci.org/JimmyBoh/pully)
+[![Code Climate](https://img.shields.io/codeclimate/github/JimmyBoh/pully.svg?style=flat-square)](https://codeclimate.com/github/JimmyBoh/pully)
+[![Code Coverage](https://img.shields.io/codeclimate/coverage/github/JimmyBoh/pully.svg?style=flat-square)](https://codeclimate.com/github/JimmyBoh/pully/coverage)
+[![Dependency Status](https://img.shields.io/david/jimmyboh/pully.svg?style=flat-square)](https://david-dm.org/jimmyboh/pully)
+[![npm version](https://img.shields.io/npm/v/pully.svg?style=flat-square)](https://www.npmjs.com/package/pully)
 
 A simple CLI for downloading high quality Youtube videos!
 
