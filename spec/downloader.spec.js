@@ -30,7 +30,6 @@ describe('Downloader', function () {
     }, function(err) {
       expect(err).toBeDefined();
     });
-      
   });    
     
   it('should automatically download video information', function(){
