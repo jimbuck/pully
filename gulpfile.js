@@ -1,6 +1,7 @@
 var gulp = require('gulp');
 var exec = require('child_process').exec;
 var connect = require('gulp-connect');
+var open = require('gulp-open');
 
 // Setup the paths for the various folders/files.
 var paths = {
@@ -38,6 +39,9 @@ gulp.task('coverage-server', function () {
     root: paths.coverageReport,
     livereload: true
   });
+  
+  gulp.src(__filename)
+    .pipe(open({ uri: 'http://localhost:8080' }));
 });
 
 // Re-runs all the tests and live-reloads the webserver.
@@ -66,7 +70,7 @@ function execTask(command) {
       if (stderr) {
         console.log(stderr);
       }
-      cb(err);
+      cb();
     });
   };
 }
