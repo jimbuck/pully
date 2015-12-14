@@ -22,7 +22,7 @@ describe('Downloader', function () {
 
   beforeEach(function () {
     spyOn(fs, 'mkdirSync');
-    
+
     PresetManager.prototype.get = function () { return {}; };
   });
 
@@ -76,7 +76,7 @@ describe('Downloader', function () {
     ytdl.getInfo = function (url, options, callback) {
       callback(expectedError);
     };
-    
+
     downloader.download({
       url: expectedUrl,
       preset: presetName
@@ -86,7 +86,7 @@ describe('Downloader', function () {
       expect(err.code).toBe(ERROR_CODES.FAILED_TO_GET_INFO);
     });
   });
-  
+
   it('should download after successfully getting video info', function () {
     var presetName = 'hd';
     var expectedUrl = 'https://www.youtube.com/watch?v=1F5Ad0dhScQ';
@@ -97,14 +97,14 @@ describe('Downloader', function () {
     ytdl.getInfo = function (url, options, callback) {
       callback(null, expectedinfo);
     };
-    
+
     spyOn(downloader, '_beginDownload');
-    
+
     downloader.download({
       url: expectedUrl,
       preset: presetName
     }, noOp);
-    
+
     expect(downloader._beginDownload).toHaveBeenCalled();
   });
 
@@ -126,6 +126,34 @@ describe('Downloader', function () {
     var mockOptions = {};
 
     var expectedOutputPath = 'Jim Test' + path.sep + 'Epic Youtube Video - 112 - test.mp4';
+
+    var actualOutputPath = downloader.setupDownloadPath(mockFormat, mockInfo, mockOptions);
+
+    expect(actualOutputPath).toEqual(expectedOutputPath);
+    expect(fs.existsSync.calls.length).toBe(1);
+    expect(fs.mkdirSync.calls.length).toBe(1);
+  });
+
+  it('should download videos to specified directory', function () {
+    spyOn(fs, 'existsSync').andCallFake(function () {
+      return false;
+    });
+
+    var downloader = new Downloader();
+
+    var mockFormat = {
+      container: 'mp4'
+    };
+    var mockInfo = {
+      author: 'Mario Test',
+      title: 'Some Video Title'
+    };
+
+    var mockOptions = {
+      path: __dirname
+    };
+
+    var expectedOutputPath = path.join(__dirname, 'Some Video Title.mp4');
 
     var actualOutputPath = downloader.setupDownloadPath(mockFormat, mockInfo, mockOptions);
 
