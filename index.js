@@ -1,4 +1,5 @@
+'use strict';
 
-var pully = require('./lib/core.js');
+const pully = require('./lib/core.js');
 
 module.exports = pully;
