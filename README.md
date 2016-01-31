@@ -22,6 +22,8 @@ While this tool makes it easy to download content from Youtube, I do not endorse
 npm install -g pully
 ```
 
+Note that pully requires `ffmpeg` installed. The dependency [fluent-ffmpeg](https://www.npmjs.com/package/fluent-ffmpeg) has instructions on how to set this up.
+
 ### Usage
 
 ```bash
