@@ -18,11 +18,11 @@
   "dependencies": {
     "chalk": "^1.1.1",
     "fluent-ffmpeg": "^2.0.1",
+    "lodash": "^4.1.0",
     "progress": "^1.1.8",
     "prompt": "^0.2.14",
     "request": "^2.67.0",
     "sanitize-filename": "^1.5.3",
-    "underscore": "^1.8.3",
     "update-notifier": "^0.6.0",
     "validator": "^4.5.1",
     "ytdl-core": "^0.7.9"
