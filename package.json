@@ -8,7 +8,10 @@
   },
   "main": "index.js",
   "scripts": {
-    "test": "gulp test"
+    "test": "gulp test",
+    "preversion": "npm test",
+    "version": "git add -A",
+    "postversion": "git push && git push --tags && npm publish"
   },
   "bin": {
     "pully": "./bin/pully.js"
