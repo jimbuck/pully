@@ -12,7 +12,7 @@
     "rules": {
         "indent": [2, 2],
         "quotes": [2, "single"],
-        "linebreak-style": [1, "windows"],
+        "linebreak-style": [1, "unix"],
         "semi": [2, "always"],
         "eqeqeq": [2, "smart"],
         "curly": [2, "all"],
