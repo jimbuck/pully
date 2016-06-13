@@ -1,10 +1,16 @@
 language: node_js
 node_js:
-  - "6"
-  - "5"
-  - "4"
-  - "0.12"
-  - "0.10"
+- '6'
+- '5'
+- '4'
 addons:
-    code_climate:
-        repo_token: b3c733b078d215a890f6b6ef65ba6098d1ebf1a6604ed9a911f0f58f5044b322
+  code_climate:
+    repo_token: b3c733b078d215a890f6b6ef65ba6098d1ebf1a6604ed9a911f0f58f5044b322
+deploy:
+  provider: npm
+  email: jim@jimmyboh.com
+  api_key:
+    secure: YfpCreKZYdxWKvyFM3TQc8gVLpfp1vUby5V0ieZs+LNHmDx//IxFKfK/GqxYrP5RzGx2u3o+/cE3uqqKkmUthNxUNNnLy7SAL1mz04oxmGSFnY2PvdBpyijfBcSLDKD7u60gMchSobOj610AVdLzmGWcH545biyAGvM7d2ZxB0c=
+  on:
+    tags: true
+    repo: JimmyBoh/pully
