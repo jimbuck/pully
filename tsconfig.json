@@ -1,0 +1,18 @@
+{
+  "compileOnSave": true,
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es6",
+    "moduleResolution": "node",
+    "inlineSourceMap": true,
+    "removeComments": false,
+    "rootDir": "src",
+    "outDir": "dist",
+    "declaration": true,
+    "noImplicitAny": true
+  },
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}

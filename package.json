@@ -1,0 +1,58 @@
+{
+  "name": "pully",
+  "version": "2.0.0-alpha",
+  "description": "A simple CLI for downloading high quality YouTube videos!",
+  "main": "index.js",
+  "scripts": {
+    "clean": "gulp clean",
+    "rebuild": "gulp build",
+    "watch": "gulp watch",
+    "test": "gulp test",
+    "coverage": "nyc report --reporter=text-lcov | coveralls",
+    "preversion": "npm test",
+    "version": "git add -A",
+    "postversion": "git push && git push --tags && npm publish"
+  },
+  "repository": {
+    "url": "git+https://github.com/JimmyBoh/pully.git",
+    "type": "git"
+  },
+  "author": "Jim Buck <jim@jimmyboh.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/JimmyBoh/pully/issues"
+  },
+  "homepage": "https://github.com/JimmyBoh/pully#readme",
+  "devDependencies": {
+    "@types/node": "^6.0.46",
+    "ava": "^0.16.0",
+    "coveralls": "^2.11.14",
+    "del": "^2.2.2",
+    "gulp": "^3.9.1",
+    "gulp-shell": "^0.5.2",
+    "nyc": "^8.4.0",
+    "typescript": "^2.0.9",
+    "yargs": "^6.3.0"
+  },
+  "dependencies": {
+    "@types/through": "0.0.28",
+    "fluent-ffmpeg": "^2.1.0",
+    "ytdl-core": "^0.7.19"
+  },
+  "ava": {
+    "files": [
+      "./dist/**/*.spec.js"
+    ],
+    "source": [
+      "./dist/**/*.js"
+    ]
+  },
+  "nyc": {
+    "include": [
+      "dist/**/*.js"
+    ],
+    "exclude": [
+      "dist/**/*.spec.js"
+    ]
+  }
+}
