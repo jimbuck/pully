@@ -34,6 +34,8 @@ function override(base: Preset, overrides: Preset): Preset {
 
 const baseVideoPreset: Preset = {
   name: null,
+  outputFormat: 'mp4',
+  video: true,
   videoFilters: [MediaFilters.resolutionFilter, MediaFilters.fpsFilter],
   videoSort: [MediaSorters.resolutionSort, MediaSorters.fpsSort]
 };
@@ -66,6 +68,7 @@ const hfrPreset = override(hdPreset, {
 
 const audioPreset: Preset = {
   name: 'audio',
+  outputFormat: 'mp3',
   video: false,
   audioSort: [MediaSorters.audioBitrateSort]
 };

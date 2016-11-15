@@ -36,7 +36,12 @@
   },
   "dependencies": {
     "@types/through": "0.0.28",
+    "@types/tmp": "0.0.31",
     "fluent-ffmpeg": "^2.1.0",
+    "lodash.template": "^4.4.0",
+    "mkdirp-promise": "^4.0.1",
+    "sanitize-filename": "^1.6.1",
+    "tmp": "0.0.30",
     "ytdl-core": "^0.7.19"
   },
   "ava": {

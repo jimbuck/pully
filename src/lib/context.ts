@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
 import { Url } from 'url';
 
-import { Lookup, Preset, MediaFormat } from './models';
+import { Lookup, DownloadOptions, DownloadResults, Preset, MediaFormat } from './models';
 import { DefaultPresets } from './presets';
 import { Download } from './download';
 
@@ -9,7 +9,7 @@ export class Context {
   
   private _presets: Lookup<Preset> = {};
 
-  constructor(presets: Array<Preset>|Lookup<Preset>) {
+  constructor(presets: Array<Preset> | Lookup<Preset>) {
     this.register(DefaultPresets).register(presets);
   }
 
@@ -18,7 +18,7 @@ export class Context {
       return this;
     }
 
-    if(Array.isArray(presets)){
+    if (Array.isArray(presets)) {
       presets.forEach(preset => this._presets[preset.name] = preset);
     } else {
       Object.assign(this._presets, presets);
@@ -27,13 +27,15 @@ export class Context {
     return this;
   }
 
-  public fetch(url: Url, presetName: string): EventEmitter {
-    let preset = this._presets[presetName];
+  public fetch(opts: DownloadOptions): Promise<DownloadResults> {
+    let preset = this._presets[opts.preset];
 
-    if (!presetName) {
-      throw new Error(`No preset matches "${presetName}"!`);
+    if (!preset) {
+      throw new Error(`No preset matches "${opts.preset}"!`);
     }
 
-    return new Download(url, preset);
+    let dl = new Download(opts, preset);
+
+    return dl.download();
   }
 }

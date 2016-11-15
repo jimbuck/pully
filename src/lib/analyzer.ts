@@ -1,22 +1,20 @@
-import { Url } from 'url';
-
 const ytdl = require('ytdl-core');
 
-import { MediaFormat, Preset, MediaInfo, RequiredFormats } from './models';
+import { MediaFormat, Preset, MediaInfo, FormatInfo } from './models';
 
 const VIDEO_FORMAT = 'video/mp4';
 const AUDIO_FORMAT = 'audio/mp4';
 
 export class Analyzer {
 
-  public getRequiredFormats(url: Url, preset: Preset): Promise<RequiredFormats> {
+  public getRequiredFormats(url: string, preset: Preset): Promise<FormatInfo> {
     return this._getMediaInfo(url)
       .then(info => this._determineBestFormats(info, preset));
   }
 
-  private _getMediaInfo(url: Url): Promise<MediaInfo> {
+  private _getMediaInfo(url: string): Promise<MediaInfo> {
     return new Promise((resolve, reject) => {
-      ytdl.getInfo(url.href, { downloadUrl: true }, function (err: any, info: any) {
+      ytdl.getInfo(url, { downloadUrl: true }, function (err: any, info: any) {
         if (err) {
           return reject(err);
         }
@@ -26,22 +24,25 @@ export class Analyzer {
     });
   }
 
-  private _determineBestFormats(info: MediaInfo, preset: Preset): RequiredFormats {
+  private _determineBestFormats(info: MediaInfo, preset: Preset): FormatInfo {
     
       let audio: MediaFormat;
       let video: MediaFormat;
 
       if (preset.video) {
-          let matchingVideoFormats = info.formats.filter(this._createVideoFilter(preset)).sort(this._createAudioCompare(preset));
+          let matchingVideoFormats = info.formats.filter(this._createVideoFilter(preset)).sort(this._createVideoCompare(preset));
           if (matchingVideoFormats.length) {
-              video = matchingVideoFormats[0]
+              video = matchingVideoFormats[0];
+
+              video && (info.downloadSize += video.downloadSize || 0);
           }
       }
 
-      let matchingAudioFormats = info.formats.filter(this._createAudioFilter(preset)).sort(this._createVideoCompare(preset));
+      let matchingAudioFormats = info.formats.filter(this._createAudioFilter(preset)).sort(this._createAudioCompare(preset));
       if (matchingAudioFormats.length) {
           audio = matchingAudioFormats[0];
-      }
+          audio && (info.downloadSize += audio.downloadSize || 0);
+      } 
 
       return { info, audio, video };
   }
