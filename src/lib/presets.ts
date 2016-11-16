@@ -2,31 +2,27 @@ import { Url } from 'url';
 import { EventEmitter } from 'events';
 import { Stream, Readable } from 'stream';
 
-import { Preset, MediaFormat, MediaFilter, MediaSorter } from './models';
+import { Preset, MediaFormat } from './models';
 
-const MediaFilters = {
-  fpsFilter: function (format: MediaFormat, options: Preset): boolean {
-    return !options.maxFps || format.fps <= options.maxFps;
-  } as MediaFilter,
-  resolutionFilter: function (format: MediaFormat, options: Preset): boolean {
-    return !options.maxResolution || format.resolution <= options.maxResolution;
-  } as MediaFilter,
-  audioBitrateFilter: function (format: MediaFormat, options: Preset) {
-    return !options.maxAudioBitrate || format.audioBitrate <= options.maxAudioBitrate;
-  } as MediaFilter
-};
+function fpsFilter (format: MediaFormat, options: Preset): boolean {
+  return !options.maxFps || format.fps <= options.maxFps;
+}
+function resolutionFilter (format: MediaFormat, options: Preset): boolean {
+  return !options.maxResolution || format.resolution <= options.maxResolution;
+}
+function audioBitrateFilter (format: MediaFormat, options: Preset) {
+  return !options.maxAudioBitrate || format.audioBitrate <= options.maxAudioBitrate;
+}
 
-const MediaSorters = {
-  fpsSort: function (a: MediaFormat, b: MediaFormat): number {
-    return (b.fps || 0) - (a.fps || 0);
-  } as MediaSorter,
-  resolutionSort: function (a: MediaFormat, b: MediaFormat): number {
-    return (b.resolution || 0) - (a.resolution || 0);
-  } as MediaSorter,
-  audioBitrateSort: function (a: MediaFormat, b: MediaFormat): number {
-    return (a.audioBitrate || 0) - (b.audioBitrate || 0);
-  } as MediaSorter
-};
+function fpsSort(a: MediaFormat, b: MediaFormat): number {
+  return (b.fps || 0) - (a.fps || 0);
+}
+function resolutionSort(a: MediaFormat, b: MediaFormat): number {
+  return (b.resolution || 0) - (a.resolution || 0);
+}
+function audioBitrateSort(a: MediaFormat, b: MediaFormat): number {
+  return (a.audioBitrate || 0) - (b.audioBitrate || 0);
+}
 
 function override(base: Preset, overrides: Preset): Preset {
   return Object.assign({}, base, overrides);
@@ -36,8 +32,8 @@ const baseVideoPreset: Preset = {
   name: null,
   outputFormat: 'mp4',
   video: true,
-  videoFilters: [MediaFilters.resolutionFilter, MediaFilters.fpsFilter],
-  videoSort: [MediaSorters.resolutionSort, MediaSorters.fpsSort]
+  videoFilters: [resolutionFilter, fpsFilter],
+  videoSort: [resolutionSort, fpsSort]
 };
 
 const maxPreset: Preset = override(baseVideoPreset, {
@@ -63,14 +59,14 @@ const hdPreset: Preset = override(twoKPreset, {
 const hfrPreset = override(hdPreset, {
   name: 'hfr',
   maxFps: null,
-  videoSort: [MediaSorters.fpsSort, MediaSorters.resolutionSort]
+  videoSort: [fpsSort, resolutionSort]
 });
 
 const audioPreset: Preset = {
   name: 'audio',
   outputFormat: 'mp3',
   video: false,
-  audioSort: [MediaSorters.audioBitrateSort]
+  audioSort: [audioBitrateSort]
 };
 
 export const DefaultPresets = [maxPreset, fourKPreset, twoKPreset, hdPreset, hfrPreset, audioPreset];

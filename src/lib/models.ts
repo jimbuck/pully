@@ -5,23 +5,25 @@ export interface Lookup<TValue> {
   [key: string]: TValue;
 }
 
-export interface PullyOptions {
-  presets?: Array<Preset>;
-  defaultPreset?: string;
+export interface PullyConfiguration {
+  preset?: string;
+  template?: string;
+  dir?: string;
+  verify?: (info: FormatInfo) => boolean | Promise<boolean>;
+  additionalPresets?: Array<Preset>;
 }
 
 export interface DownloadOptions {
   url: string;
   preset?: string;
   dir?: string;
-  template?: string;
+  template?: (data: MediaInfo) => string;
   verify?: (info: FormatInfo) => boolean | Promise<boolean>;
   progress?: (data: ProgressData) => void;
 }
 
 export interface DownloadResults {
   path?: string;
-  //stream?: Readable;
   format: FormatInfo;
 }
 
@@ -41,7 +43,7 @@ export class MediaInfo
     this.id = data.video_id;
     this.title = data.title;
     this.author = data.author;
-    this.description = data.description;
+    this.description = data.description || '';
     this.keywords = data.keywords || [];
     this.downloadSize = 0;
     this.formats = (data.formats || []).map((f: any) => new MediaFormat(f));
@@ -88,19 +90,12 @@ export interface Preset {
   maxResolution?: number;
   maxAudioBitrate?: number;
   video?: boolean;
-  videoFilters?: Array<MediaFilter>;
-  videoSort?: Array<MediaSorter>;
-  audioFilters?: Array<MediaFilter>;
-  audioSort?: Array<MediaSorter>;
+  videoFilters?: Array<(format: MediaFormat, preset: Preset) => boolean>;
+  videoSort?: Array<(a: MediaFormat, b: MediaFormat) => number>;
+  audioFilters?: Array<(format: MediaFormat, preset: Preset) => boolean>;
+  audioSort?: Array<(a: MediaFormat, b: MediaFormat) => number>;
 }
 
-export interface MediaFilter {
-  (format: MediaFormat, preset: Preset): boolean;
-}
-
-export interface MediaSorter {
-  (a: MediaFormat, b: MediaFormat): number;
-}
 
 export interface FormatInfo {
   info?: MediaInfo;
@@ -109,8 +104,9 @@ export interface FormatInfo {
 }
 
 export interface ProgressData {
-  downloadedBytes: number;
-  totalBytes: number;
-  progress: number;
-  percent: number;
+  downloadedBytes?: number;
+  totalBytes?: number;
+  progress?: number;
+  percent?: number;
+  indeterminate?: boolean; 
 }

@@ -1,6 +1,6 @@
 {
   "name": "pully",
-  "version": "2.0.0-alpha",
+  "version": "2.0.0-beta",
   "description": "A simple CLI for downloading high quality YouTube videos!",
   "main": "index.js",
   "scripts": {

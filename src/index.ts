@@ -2,40 +2,78 @@ import { parse, Url } from 'url';
 import { Readable } from 'stream';
 import { EventEmitter } from 'events';
 import { createWriteStream } from 'fs';
+import { resolve } from 'path';
 
-import { PullyOptions, DownloadOptions, DownloadResults, MediaInfo, FormatInfo, ProgressData } from './lib/models';
-import { Context } from './lib/context';
-import { Presets } from './lib/presets';
+const template = require('lodash.template');
+
+import { Lookup, Preset, PullyConfiguration, DownloadOptions, DownloadResults, MediaInfo, FormatInfo, ProgressData } from './lib/models';
+import { Download } from './lib/download';
+import { Presets, DefaultPresets } from './lib/presets';
+
+const DEFAULT_TEMPLATE = '${author}/${title}';
 
 export class Pully {
 
-  private _ctx: Context;
+  private _presets: Lookup<Preset> = {};
 
-  constructor(private _options?: PullyOptions) {
-    this._options = this._options || {};
-    this._ctx = new Context(this._options.presets);
+  constructor(private _config?: PullyConfiguration) {
+    this._config = this._config || {};
+    this._registerPresets(DefaultPresets)._registerPresets(this._config.additionalPresets);
   }
   
   public download(url: string, preset?: string): Promise<DownloadResults>;
-  public download(options: DownloadOptions): Promise<DownloadResults>;
-  public download(options: string|DownloadOptions, preset?: string): Promise<DownloadResults> {
-    if (typeof options === 'string') {
-      options = {
-        url: options,
+  public download(options: { url?: string, preset?: string, dir?: string, template?: string, verify?: (info: FormatInfo) => boolean | Promise<boolean>, progress?: (data: ProgressData) => void }): Promise<DownloadResults>;
+  public download(input: any, preset?: string): Promise<DownloadResults> {
+    if (typeof input === 'string') {
+      input = {
+        url: input,
         preset
-      } as DownloadOptions;
+      };
     }
 
-    this._validateUrl(options.url);
+    this._validateUrl(input.url);
 
-    options.preset = options.preset || this._options.defaultPreset || Presets.HD;
+    let specifiedDir = input.dir || this._config.dir;
 
-    return this._ctx.fetch(options);
+    const options: DownloadOptions = {
+      url: input.url,
+      preset: input.preset || this._config.preset || Presets.HD,
+      dir: specifiedDir ? resolve(specifiedDir) : null,
+      template: template(input.template || DEFAULT_TEMPLATE),
+      verify: input.verify || this._config.verify || (() => true),
+      progress: input.progress
+    };
+
+    return this._beginDownload(options);
   }
 
   private _validateUrl(url: string): void {
     // TODO: Check to make sure it is a valid URL...
   }
+
+  private _registerPresets(presets: Array<Preset> | Lookup<Preset>): this {
+    if (!presets) {
+      return this;
+    }
+
+    if (Array.isArray(presets)) {
+      presets.forEach(preset => this._presets[preset.name] = preset);
+    } else {
+      Object.assign(this._presets, presets);
+    }
+
+    return this;
+  }
+
+  private _beginDownload(options: DownloadOptions): Promise<DownloadResults> {
+    let preset = this._presets[options.preset];
+
+    if (!preset) {
+      throw new Error(`NO PRESET "${options.preset}"!`);
+    }
+
+    return Download.initiate(options, preset);
+  }
 }
 
-export { PullyOptions, Presets, ProgressData };
+export { PullyConfiguration, Presets, ProgressData };

@@ -3,7 +3,6 @@ import { createWriteStream } from 'fs';
 import { join, dirname } from 'path';
 import { Readable, Transform, PassThrough } from 'stream';
 
-const template = require('lodash.template');
 const mkdirp = require('mkdirp-promise');
 import { file, setGracefulCleanup } from 'tmp';
 setGracefulCleanup();
@@ -15,39 +14,11 @@ import { DownloadOptions, MediaFormat, DownloadResults, Preset, MediaInfo, Forma
 import { Analyzer } from './analyzer';
 import { scrubObject } from '../utils/scrub';
 
-
+const CANCELLED_MESSAGE = 'CANCELLED';
 const TEMP_FILE_PREFIX = 'pully-';
 const TEMP_AUDIO_EXT = '.m4a';
 const TEMP_VIDEO_EXT = '.mp4';
 const DEFAULT_FILENAME_TEMPLATE = '${author}/${title}';
-
-function getTempPath(suffix: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    file({ prefix: TEMP_FILE_PREFIX, postfix: suffix }, (err, path) => {
-      if (err) {
-        return reject(err);
-      }
-
-      resolve(path);
-    });
-  });
-}
-
-function ffmpegSave(ffmpegCommand: any, path: string): Promise<string> {
-  let dir = dirname(path);
-
-  return mkdirp(dir).then(() => {
-    return new Promise((resolve, reject) => {
-      ffmpegCommand
-        .on('error', reject)
-        .on('progress', (data: any) => {
-          console.log('ffmpeg progress: ' + data.percent);
-        })
-        .on('end', () => resolve(path))
-        .save(path);
-    });
-  });
-} 
 
 export class Download extends EventEmitter {
   
@@ -55,11 +26,7 @@ export class Download extends EventEmitter {
     return this._options.url;
   }
  
-  public get preset(): Preset {
-    return Object.assign({}, this._preset);
-  }
-
-  public get progress(): number {
+  private get _progress(): number {
     if (!this._totalBytes || !this._downloadedBytes) {
       return 0;
     }
@@ -70,55 +37,59 @@ export class Download extends EventEmitter {
   private _totalBytes: number = 0;
   private _downloadedBytes: number = 0;
 
-  private _analyzer: Analyzer = new Analyzer();
+  private _format: FormatInfo;
 
-  constructor(private _options: DownloadOptions, private _preset: Preset) {
-    super();
-
-    this._options.verify = this._options.verify || (() => true);
+  public static initiate(options: DownloadOptions, preset: Preset): Promise<DownloadResults> {
+    return new Download(options, preset, new Analyzer()).start();
   }
 
-  public download(): Promise<DownloadResults> {
-    return this._analyzer
-      .getRequiredFormats(this.url, this._preset)
-      .then((format) => {
-        return Promise.resolve(this._options.verify(format))
-          .then(verified => {
-            if (!verified) {
-              throw new Error(`Download cancelled!`);
-            }
+  constructor(private _options: DownloadOptions, private _preset: Preset, private _analyzer: Analyzer) {
+    super();
+  }
 
-            return format;
-          });
-      })
-      .then((format) => {
-        this._totalBytes += (format.audio ? (format.audio.downloadSize || 0) : 0);
-        this._totalBytes += (format.video ? (format.video.downloadSize || 0) : 0);
+  private start(): Promise<DownloadResults> {
+    return this._getFormats()
+      .then(() => {
+        this._totalBytes += (this._format.audio ? (this._format.audio.downloadSize || 0) : 0);
+        this._totalBytes += (this._format.video ? (this._format.video.downloadSize || 0) : 0);
 
         this._emitProgress(); // Emit zero progress...
 
         return Promise.all([
-          this._downloadTempFile(format.info, format.video, TEMP_VIDEO_EXT),
-          this._downloadTempFile(format.info, format.audio, TEMP_AUDIO_EXT),
-          this._getOutputPath(format.info)
+          this._downloadTempFile(this._format.video, TEMP_VIDEO_EXT),
+          this._downloadTempFile(this._format.audio, TEMP_AUDIO_EXT),
+          this._getOutputPath()
         ])
-          .then(([videoPath, audioPath, outputPath]) => {
-            return this._mergeStreams(videoPath, audioPath, outputPath)
-              .then(path => {
-                return { path, format };
-              });
-          });
+      })
+      .then(([videoPath, audioPath, outputPath]) => {
+        return this._mergeStreams(videoPath, audioPath, outputPath)
+      })
+      .then(path => {
+        return { path, format: this._format };
       });
   }
 
-  private _downloadTempFile(info: MediaInfo, format: MediaFormat, ext: string): Promise<string> {
+  private _getFormats(): Promise<void> {
+    return this._analyzer.getRequiredFormats(this.url, this._preset)
+      .then(format => {
+        return Promise.resolve(this._options.verify(format)).then(verified => {
+          if (verified) {
+            this._format = format;
+          } else {
+            throw new Error(CANCELLED_MESSAGE);
+          }
+        });
+      });
+  }
+
+  private _downloadTempFile(format: MediaFormat, ext: string): Promise<string> {
     return new Promise((resolve, reject) => {
       if (!format) {
         return resolve(null);
       }
 
-      getTempPath(ext).then(path => {
-        ytdl.downloadFromInfo(info.raw, { format: format.raw })
+      this._getTempPath(ext).then(path => {
+        ytdl.downloadFromInfo(this._format.info.raw, { format: format.raw })
           .pipe(this._createProgressTracker())
           .pipe(createWriteStream(path))
           .on('finish', () => resolve(path))
@@ -128,29 +99,34 @@ export class Download extends EventEmitter {
   }
 
   private _mergeStreams(videoPath: string, audioPath: string, outputPath: string): Promise<string> {
-    let ffmpegCommand = ffmpeg().format(this._preset.outputFormat);
+    let ffmpegCommand = ffmpeg()
+      .format(this._preset.outputFormat)
+      .outputOptions('-metadata', `title=${this._format.info.title}`)
+      .outputOptions('-metadata', `author=${this._format.info.author}`).outputOptions('-metadata', `artist=${this._format.info.author}`)
+      .outputOptions('-metadata', `description=${this._format.info.description}`).outputOptions('-metadata', `comment=${this._format.info.description}`)
+      .outputOptions('-metadata', `episode_id=${this._format.info.id}`)
+      .outputOptions('-metadata', `network=YouTube`);
     
     if (videoPath) {
-      ffmpegCommand = ffmpegCommand.input(videoPath);//.videoCodec('copy');
+      ffmpegCommand = ffmpegCommand.input(videoPath);
     }
     
     if (audioPath) {
-      ffmpegCommand = ffmpegCommand.input(audioPath);//.audioCodec('copy');
+      ffmpegCommand = ffmpegCommand.input(audioPath);
     }
 
-    return ffmpegSave(ffmpegCommand, outputPath);
+    return this._ffmpegSave(ffmpegCommand, outputPath);
   }
 
-  private _getOutputPath(info: MediaInfo): Promise<string> {
-    
+  private _getOutputPath(): Promise<string> {
     if (this._options.dir) {
-      let safeInfo = scrubObject(info);
+      let safeInfo = scrubObject(this._format.info);
 
-      let filename = template(this._options.template || DEFAULT_FILENAME_TEMPLATE)(safeInfo) + '.' + this._preset.outputFormat;
+      let filename = this._options.template(safeInfo) + '.' + this._preset.outputFormat;
 
       return Promise.resolve(join(this._options.dir, filename));
     } else {
-      return getTempPath('.' + this._preset.outputFormat);
+      return this._getTempPath('.' + this._preset.outputFormat);
     }
   }
 
@@ -165,16 +141,46 @@ export class Download extends EventEmitter {
   }
 
   // TODO: Debounce this event?  
-  private _emitProgress(): void {
+  private _emitProgress(indeterminate?: boolean): void {
     if (!this._options.progress) {
       return;
     }
 
-    this._options.progress({
+    let data: ProgressData = indeterminate ? { indeterminate } : {
       downloadedBytes: this._downloadedBytes,
       totalBytes: this._totalBytes,
-      progress: this.progress,
-      percent: Math.floor(this.progress * 10000)/100
-    } as ProgressData);
+      progress: this._progress,
+      percent: Math.floor(this._progress * 10000) / 100
+    };
+
+    this._options.progress(data);
+  }
+
+  private _getTempPath(suffix: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      file({ prefix: TEMP_FILE_PREFIX, postfix: suffix }, (err, path) => {
+        if (err) {
+          return reject(err);
+        }
+
+        resolve(path);
+      });
+    });
+  }
+
+  private _ffmpegSave(ffmpegCommand: any, path: string): Promise<string> {
+    let dir = dirname(path);
+
+    return mkdirp(dir).then(() => {
+      return new Promise((resolve, reject) => {
+        ffmpegCommand
+          .on('error', reject)
+          .on('progress', (data: any) => {
+            this._emitProgress(true);
+          })
+          .on('end', () => resolve(path))
+          .save(path);
+      });
+    });
   }
 }

@@ -37,3 +37,5 @@ coverage
 
 .vscode
 dist
+output
+test
