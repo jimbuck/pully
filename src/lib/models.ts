@@ -1,11 +1,9 @@
-import { Url } from 'url';
-import { Readable } from 'stream';
 
 export interface Lookup<TValue> {
   [key: string]: TValue;
 }
 
-export interface PullyConfiguration {
+export interface PullyConfig {
   preset?: string;
   template?: string;
   dir?: string;
@@ -16,6 +14,15 @@ export interface PullyConfiguration {
 export interface DownloadOptions {
   url: string;
   preset?: string;
+  dir?: string;
+  template?: string;
+  verify?: (info: FormatInfo) => boolean | Promise<boolean>;
+  progress?: (data: ProgressData) => void;
+}
+
+export interface DownloadConfig {
+  url: string;
+  preset?: Preset;
   dir?: string;
   template?: (data: MediaInfo) => string;
   verify?: (info: FormatInfo) => boolean | Promise<boolean>;

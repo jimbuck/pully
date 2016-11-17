@@ -1,7 +1,3 @@
-import { Url } from 'url';
-import { EventEmitter } from 'events';
-import { Stream, Readable } from 'stream';
-
 import { Preset, MediaFormat } from './models';
 
 function fpsFilter (format: MediaFormat, options: Preset): boolean {

@@ -1,16 +1,14 @@
-import { EventEmitter } from 'events';
 import { createWriteStream } from 'fs';
 import { join, dirname } from 'path';
 import { Readable, Transform, PassThrough } from 'stream';
 
+const ytdl = require('ytdl-core');
 const mkdirp = require('mkdirp-promise');
+const ffmpeg = require('fluent-ffmpeg');
 import { file, setGracefulCleanup } from 'tmp';
 setGracefulCleanup();
 
-const ytdl = require('ytdl-core');
-const ffmpeg = require('fluent-ffmpeg');
-
-import { DownloadOptions, MediaFormat, DownloadResults, Preset, MediaInfo, FormatInfo, ProgressData } from './models';
+import { DownloadConfig, MediaFormat, DownloadResults, Preset, MediaInfo, FormatInfo, ProgressData } from './models';
 import { Analyzer } from './analyzer';
 import { scrubObject } from '../utils/scrub';
 
@@ -20,11 +18,7 @@ const TEMP_AUDIO_EXT = '.m4a';
 const TEMP_VIDEO_EXT = '.mp4';
 const DEFAULT_FILENAME_TEMPLATE = '${author}/${title}';
 
-export class Download extends EventEmitter {
-  
-  public get url(): string {
-    return this._options.url;
-  }
+export class Download {
  
   private get _progress(): number {
     if (!this._totalBytes || !this._downloadedBytes) {
@@ -39,15 +33,12 @@ export class Download extends EventEmitter {
 
   private _format: FormatInfo;
 
-  public static initiate(options: DownloadOptions, preset: Preset): Promise<DownloadResults> {
-    return new Download(options, preset, new Analyzer()).start();
-  }
+  constructor(
+    private _config: DownloadConfig,
+    private _analyzer: Analyzer = new Analyzer()
+  ) { }
 
-  constructor(private _options: DownloadOptions, private _preset: Preset, private _analyzer: Analyzer) {
-    super();
-  }
-
-  private start(): Promise<DownloadResults> {
+  public start(): Promise<DownloadResults> {
     return this._getFormats()
       .then(() => {
         this._totalBytes += (this._format.audio ? (this._format.audio.downloadSize || 0) : 0);
@@ -70,9 +61,9 @@ export class Download extends EventEmitter {
   }
 
   private _getFormats(): Promise<void> {
-    return this._analyzer.getRequiredFormats(this.url, this._preset)
+    return this._analyzer.getRequiredFormats(this._config.url, this._config.preset)
       .then(format => {
-        return Promise.resolve(this._options.verify(format)).then(verified => {
+        return Promise.resolve(this._config.verify(format)).then(verified => {
           if (verified) {
             this._format = format;
           } else {
@@ -100,7 +91,7 @@ export class Download extends EventEmitter {
 
   private _mergeStreams(videoPath: string, audioPath: string, outputPath: string): Promise<string> {
     let ffmpegCommand = ffmpeg()
-      .format(this._preset.outputFormat)
+      .format(this._config.preset.outputFormat)
       .outputOptions('-metadata', `title=${this._format.info.title}`)
       .outputOptions('-metadata', `author=${this._format.info.author}`).outputOptions('-metadata', `artist=${this._format.info.author}`)
       .outputOptions('-metadata', `description=${this._format.info.description}`).outputOptions('-metadata', `comment=${this._format.info.description}`)
@@ -119,14 +110,14 @@ export class Download extends EventEmitter {
   }
 
   private _getOutputPath(): Promise<string> {
-    if (this._options.dir) {
+    if (this._config.dir) {
       let safeInfo = scrubObject(this._format.info);
 
-      let filename = this._options.template(safeInfo) + '.' + this._preset.outputFormat;
+      let filename = this._config.template(safeInfo) + '.' + this._config.preset.outputFormat;
 
-      return Promise.resolve(join(this._options.dir, filename));
+      return Promise.resolve(join(this._config.dir, filename));
     } else {
-      return this._getTempPath('.' + this._preset.outputFormat);
+      return this._getTempPath('.' + this._config.preset.outputFormat);
     }
   }
 
@@ -142,7 +133,7 @@ export class Download extends EventEmitter {
 
   // TODO: Debounce this event?  
   private _emitProgress(indeterminate?: boolean): void {
-    if (!this._options.progress) {
+    if (!this._config.progress) {
       return;
     }
 
@@ -153,7 +144,7 @@ export class Download extends EventEmitter {
       percent: Math.floor(this._progress * 10000) / 100
     };
 
-    this._options.progress(data);
+    this._config.progress(data);
   }
 
   private _getTempPath(suffix: string): Promise<string> {

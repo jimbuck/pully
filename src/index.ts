@@ -6,24 +6,35 @@ import { resolve } from 'path';
 
 const template = require('lodash.template');
 
-import { Lookup, Preset, PullyConfiguration, DownloadOptions, DownloadResults, MediaInfo, FormatInfo, ProgressData } from './lib/models';
+import { Lookup, Preset, PullyConfig, DownloadConfig, DownloadResults, MediaInfo, FormatInfo, ProgressData } from './lib/models';
 import { Download } from './lib/download';
 import { Presets, DefaultPresets } from './lib/presets';
 
-const DEFAULT_TEMPLATE = '${author}/${title}';
+const DEFAULT_TEMPLATE = '${title}__${author}';
+
+export { PullyConfig, Presets, ProgressData, DownloadResults };
+
+export interface DownloadOptions {
+  url?: string;
+  preset?: string;
+  dir?: string;
+  template?: string;
+  verify?: (info: FormatInfo) => boolean | Promise<boolean>;
+  progress?: (data: ProgressData) => void;
+}
 
 export class Pully {
 
   private _presets: Lookup<Preset> = {};
 
-  constructor(private _config?: PullyConfiguration) {
+  constructor(private _config?: PullyConfig) {
     this._config = this._config || {};
     this._registerPresets(DefaultPresets)._registerPresets(this._config.additionalPresets);
   }
   
   public download(url: string, preset?: string): Promise<DownloadResults>;
-  public download(options: { url?: string, preset?: string, dir?: string, template?: string, verify?: (info: FormatInfo) => boolean | Promise<boolean>, progress?: (data: ProgressData) => void }): Promise<DownloadResults>;
-  public download(input: any, preset?: string): Promise<DownloadResults> {
+  public download(options: DownloadOptions): Promise<DownloadResults>;
+  public download(input: string|DownloadOptions, preset?: string): Promise<DownloadResults> {
     if (typeof input === 'string') {
       input = {
         url: input,
@@ -35,9 +46,9 @@ export class Pully {
 
     let specifiedDir = input.dir || this._config.dir;
 
-    const options: DownloadOptions = {
+    const options: DownloadConfig = {
       url: input.url,
-      preset: input.preset || this._config.preset || Presets.HD,
+      preset: this._presets[input.preset || this._config.preset || Presets.HD],
       dir: specifiedDir ? resolve(specifiedDir) : null,
       template: template(input.template || DEFAULT_TEMPLATE),
       verify: input.verify || this._config.verify || (() => true),
@@ -65,15 +76,11 @@ export class Pully {
     return this;
   }
 
-  private _beginDownload(options: DownloadOptions): Promise<DownloadResults> {
-    let preset = this._presets[options.preset];
-
-    if (!preset) {
-      throw new Error(`NO PRESET "${options.preset}"!`);
+  private _beginDownload(config: DownloadConfig): Promise<DownloadResults> {
+    if (!config.preset) {
+      throw new Error(`NO PRESET "${config.preset}"!`);
     }
 
-    return Download.initiate(options, preset);
+    return new Download(config).start();
   }
 }
-
-export { PullyConfiguration, Presets, ProgressData };

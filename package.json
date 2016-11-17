@@ -3,6 +3,9 @@
   "version": "2.0.0-beta",
   "description": "A simple CLI for downloading high quality YouTube videos!",
   "main": "index.js",
+  "bin": {
+    "pully": "./dist/bin/pully.js"
+  },
   "scripts": {
     "clean": "gulp clean",
     "rebuild": "gulp build",
@@ -32,16 +35,18 @@
     "gulp-shell": "^0.5.2",
     "nyc": "^8.4.0",
     "typescript": "^2.0.9",
-    "yargs": "^6.3.0"
+    "yargs": "^6.4.0"
   },
   "dependencies": {
     "@types/through": "0.0.28",
     "@types/tmp": "0.0.31",
+    "commander": "^2.9.0",
     "fluent-ffmpeg": "^2.1.0",
     "lodash.template": "^4.4.0",
     "mkdirp-promise": "^4.0.1",
     "sanitize-filename": "^1.6.1",
     "tmp": "0.0.30",
+    "update-notifier": "^1.0.2",
     "ytdl-core": "^0.7.19"
   },
   "ava": {
