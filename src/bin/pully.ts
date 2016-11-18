@@ -4,12 +4,16 @@ import { join } from 'path';
 const program = require('commander');
 const updateNotifier = require('update-notifier');
 const chalk = require('chalk');
+const logUpdate = require('log-update');
 
 import { DownloadOptions, ProgressData, DownloadResults } from '../';
+import { toHumanSize, toHumanTime } from '../utils/human';
+import { ProgressBar } from '../utils/progress'; 
 
-const pkg  = require(join(__dirname, '../../package.json'));
+const pkg = require(join(__dirname, '../../package.json'));
+updateNotifier({ pkg }).notify();
 
-updateNotifier({pkg}).notify();
+const progressBar: ProgressBar = new ProgressBar();
 
 // Convert -v to -V so version works correctly...
 var vPos = process.argv.indexOf('-v')
@@ -36,7 +40,10 @@ program
 // Show help if no other commands match...
 if (!program.args.length) {
   program.help();
+  process.exit(0);
 }
+
+
 
 function mergeOptions(options: any): Promise<any> {
   
@@ -48,7 +55,8 @@ function mergeOptions(options: any): Promise<any> {
 
 function download(options: any): Promise<void> {
   return new Pully().download(options).then((result) => {
-    options.silent || console.log(chalk.green(`Download saved to: "${result.path}"`));
+    progressBar.clear();
+    options.silent || console.log(`Download saved to: "${chalk.green(result.path)}"`);
 var vPos = process.argv.indexOf('-v')
 if (vPos > -1) {
   process.argv[vPos] = '-V'
@@ -62,7 +70,7 @@ if (vPos > -1) {
 function getDefaultOptions(options: any): DownloadOptions {
   return {
     info: (format, cancel) => {
-      console.log(`Downloading "${chalk.cyan(format.info.title)}" by ${chalk.cyan(format.info.author)}...`);
+      console.log(`Downloading "${chalk.cyan(format.info.title)}" by ${chalk.cyan(format.info.author)} (${chalk.blue(toHumanSize(format.info.downloadSize))})...`);
     },
     progress: (data: ProgressData) => {
       if (options.silent) {
@@ -71,10 +79,10 @@ function getDefaultOptions(options: any): DownloadOptions {
 
       if (data.indeterminate) {
         // TODO: Show spinner...
-        console.log(chalk.green(`[${new Date().toUTCString()}] Working...`));
+        progressBar.tick();
       } else {
         // TODO: Show progress bar...
-        console.log(chalk.yellow(`Progress: ${data.percent}%`));
+        progressBar.tick(data.progress);
       }
     }
   } as DownloadOptions;
@@ -83,18 +91,19 @@ function getDefaultOptions(options: any): DownloadOptions {
 // Mock Pully:
 class Pully {
   public download(options: DownloadOptions): Promise<DownloadResults> {
-    let maxDelay = 500;
+    const maxDelay = 500;
 
+    const totalBytes = 190000 + (Math.floor(Math.random() * 20000));
+    const downloadRate = Math.floor(totalBytes / 31);
     let downloadedBytes = 0;
-    let totalBytes = 2000000;
-    let downloadRate = Math.floor(totalBytes / 17);
     
     return new Promise((resolve, reject) => {
       let cancelled = false;
       options.info({
         info: {
           title: 'Some Fake Video',
-          author: 'Really Cool Person'
+          author: 'Really Cool Person',
+          downloadSize: totalBytes
         }
       }, () => cancelled = true);
 
@@ -124,7 +133,7 @@ class Pully {
         }
       }
 
-      let mergeCount = 3 + Math.floor(Math.random() * 5);
+      let mergeCount = 60 + Math.floor(Math.random() * 10);
 
       function mergeTick() {
         if (mergeCount-- <= 0) {
@@ -138,7 +147,7 @@ class Pully {
           indeterminate: true
         });
 
-        setTimeout(mergeTick, Math.floor(Math.random() * maxDelay * 3));
+        setTimeout(mergeTick, Math.floor(Math.random() * maxDelay * 0.1));
       }
     });
   }

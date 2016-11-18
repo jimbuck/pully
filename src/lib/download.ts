@@ -132,7 +132,7 @@ export class Download {
     });
   }
 
-  // TODO: Debounce this event?  
+  // TODO: Throttle this event to avoid performance drops?
   private _emitProgress(indeterminate?: boolean): void {
     if (!this._config.progress) {
       return;

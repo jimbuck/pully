@@ -115,5 +115,5 @@ export interface ProgressData {
   totalBytes?: number;
   progress?: number;
   percent?: number;
-  indeterminate?: boolean; 
+  indeterminate?: boolean;
 }
