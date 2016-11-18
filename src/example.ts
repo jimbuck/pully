@@ -10,11 +10,13 @@ p.download({
   dir: './output',
   template: '${author} -__- ${title}',
   preset: Presets.HD,
-  verify: (format) => {
+  info: (format, cancel) => {
     console.log('Verify: ' + format.info.downloadSize);
 
     // Limit download to ~3MB...    
-    return format.info.downloadSize < 3000000;
+    if (format.info.downloadSize > 3000000) {
+      cancel();
+    }
   },
   progress: (data) => {
     if (data.indeterminate) {

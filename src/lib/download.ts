@@ -63,11 +63,12 @@ export class Download {
   private _getFormats(): Promise<void> {
     return this._analyzer.getRequiredFormats(this._config.url, this._config.preset)
       .then(format => {
-        return Promise.resolve(this._config.verify(format)).then(verified => {
-          if (verified) {
-            this._format = format;
-          } else {
+        let cancelled = false;
+        return Promise.resolve(this._config.info(format, () => cancelled = true)).then(() => {
+          if (cancelled) {
             throw new Error(CANCELLED_MESSAGE);
+          } else {
+            this._format = format;
           }
         });
       });

@@ -16,7 +16,7 @@ export interface DownloadOptions {
   preset?: string;
   dir?: string;
   template?: string;
-  verify?: (info: FormatInfo) => boolean | Promise<boolean>;
+  info?: (info: FormatInfo, cancel: () => void) => void;
   progress?: (data: ProgressData) => void;
 }
 
@@ -25,7 +25,7 @@ export interface DownloadConfig {
   preset?: Preset;
   dir?: string;
   template?: (data: MediaInfo) => string;
-  verify?: (info: FormatInfo) => boolean | Promise<boolean>;
+  info?: (info: FormatInfo, cancel: () => void) => void;
   progress?: (data: ProgressData) => void;
 }
 
@@ -42,7 +42,7 @@ export class MediaInfo
   public description?: string;
   public keywords?: Array<string>;
   public formats?: Array<MediaFormat>;
-  public downloadSize: number;
+  public downloadSize?: number;
   public raw?: any;
 
   constructor(data: any) {

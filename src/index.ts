@@ -19,7 +19,7 @@ export interface DownloadOptions {
   preset?: string;
   dir?: string;
   template?: string;
-  verify?: (info: FormatInfo) => boolean | Promise<boolean>;
+  info?: (info: FormatInfo, cancel: () => void) => void;
   progress?: (data: ProgressData) => void;
 }
 
@@ -51,7 +51,7 @@ export class Pully {
       preset: this._presets[input.preset || this._config.preset || Presets.HD],
       dir: specifiedDir ? resolve(specifiedDir) : null,
       template: template(input.template || DEFAULT_TEMPLATE),
-      verify: input.verify || this._config.verify || (() => true),
+      info: input.info || this._config.verify || (() => { }),
       progress: input.progress
     };
 

@@ -3,8 +3,9 @@
 import { join } from 'path';
 const program = require('commander');
 const updateNotifier = require('update-notifier');
+const chalk = require('chalk');
 
-import { Pully, DownloadOptions, ProgressData } from '../';
+import { DownloadOptions, ProgressData, DownloadResults } from '../';
 
 const pkg  = require(join(__dirname, '../../package.json'));
 
@@ -47,7 +48,7 @@ function mergeOptions(options: any): Promise<any> {
 
 function download(options: any): Promise<void> {
   return new Pully().download(options).then((result) => {
-    options.silent || console.log(`Download saved to: "${result.path}"`);
+    options.silent || console.log(chalk.green(`Download saved to: "${result.path}"`));
 var vPos = process.argv.indexOf('-v')
 if (vPos > -1) {
   process.argv[vPos] = '-V'
@@ -58,8 +59,11 @@ if (vPos > -1) {
   });
 }
 
-function getDefaultOptions(options: any) {
+function getDefaultOptions(options: any): DownloadOptions {
   return {
+    info: (format, cancel) => {
+      console.log(`Downloading "${chalk.cyan(format.info.title)}" by ${chalk.cyan(format.info.author)}...`);
+    },
     progress: (data: ProgressData) => {
       if (options.silent) {
         return;
@@ -67,11 +71,75 @@ function getDefaultOptions(options: any) {
 
       if (data.indeterminate) {
         // TODO: Show spinner...
-        console.log(`[${new Date().toUTCString()}] Working...`);
+        console.log(chalk.green(`[${new Date().toUTCString()}] Working...`));
       } else {
         // TODO: Show progress bar...
-        console.log(`Progress: ${data.percent}%`);
+        console.log(chalk.yellow(`Progress: ${data.percent}%`));
       }
     }
-  };
+  } as DownloadOptions;
+}
+
+// Mock Pully:
+class Pully {
+  public download(options: DownloadOptions): Promise<DownloadResults> {
+    let maxDelay = 500;
+
+    let downloadedBytes = 0;
+    let totalBytes = 2000000;
+    let downloadRate = Math.floor(totalBytes / 17);
+    
+    return new Promise((resolve, reject) => {
+      let cancelled = false;
+      options.info({
+        info: {
+          title: 'Some Fake Video',
+          author: 'Really Cool Person'
+        }
+      }, () => cancelled = true);
+
+      if (cancelled) {
+        return reject(new Error('CANCELLED'));
+      }
+
+      downloadTick();
+
+      function downloadTick() {
+        let remainingBytes = totalBytes - downloadedBytes;
+        downloadedBytes += Math.min(downloadRate, remainingBytes);
+
+        let progress = downloadedBytes / totalBytes;
+
+        options.progress({
+          downloadedBytes,
+          totalBytes,
+          progress,
+          percent: Math.floor((progress * 10000)) / 100
+        });
+
+        if (progress >= 1) {
+          setTimeout(mergeTick, Math.floor(Math.random() * maxDelay));
+        } else {
+          setTimeout(downloadTick, Math.floor(Math.random() * maxDelay))
+        }
+      }
+
+      let mergeCount = 3 + Math.floor(Math.random() * 5);
+
+      function mergeTick() {
+        if (mergeCount-- <= 0) {
+          return resolve({
+            path: '/not/a/real/download.mp4',
+            format: null
+          } as DownloadResults);
+        }
+
+        options.progress({
+          indeterminate: true
+        });
+
+        setTimeout(mergeTick, Math.floor(Math.random() * maxDelay * 3));
+      }
+    });
+  }
 }
