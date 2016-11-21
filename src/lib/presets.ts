@@ -27,13 +27,14 @@ function override(base: Preset, overrides: Preset): Preset {
 const baseVideoPreset: Preset = {
   name: null,
   outputFormat: 'mp4',
-  video: true,
   videoFilters: [resolutionFilter, fpsFilter],
   videoSort: [resolutionSort, fpsSort]
 };
 
 const maxPreset: Preset = override(baseVideoPreset, {
-  name: 'max'
+  name: 'max',
+  maxResolution: Number.MAX_SAFE_INTEGER,
+  maxFps: Number.MAX_SAFE_INTEGER
 });
 
 const fourKPreset = override(maxPreset, {
@@ -61,8 +62,9 @@ const hfrPreset = override(hdPreset, {
 const mp3Preset: Preset = {
   name: 'mp3',
   outputFormat: 'mp3',
-  video: false,
-  audioSort: [audioBitrateSort]
+  audioFilters: [audioBitrateFilter],
+  audioSort: [audioBitrateSort],
+  maxAudioBitrate: Number.MAX_SAFE_INTEGER
 };
 
 export const DefaultPresets = [maxPreset, fourKPreset, twoKPreset, hdPreset, hfrPreset, mp3Preset];

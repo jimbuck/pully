@@ -10,7 +10,7 @@ const LOG_1024 = Math.log(1024);
  * @return {String}
  */
 export function toHumanTime(seconds: number): string {
-  if (typeof seconds !== 'number') {
+  if (typeof seconds !== 'number' || isNaN(seconds) || !Number.isFinite(seconds)) {
     return '';
   }
 
@@ -40,10 +40,28 @@ export function toHumanTime(seconds: number): string {
  * @return {String}
  */
 export function toHumanSize(bytes: number, places: number = 0) {
-  if (!bytes) {
+  if (!bytes || isNaN(bytes) || !Number.isFinite(bytes)) {
     return '0B';
   }
 
   const t2 = Math.min(Math.floor(Math.log(bytes) / LOG_1024), 12);
   return (bytes / Math.pow(1024, t2)).toFixed(places) + UNITS.charAt(t2).replace(' ', '') + 'B';
+}
+
+export function fromHumanSize(size: string): number {
+  if (!size) {
+    return null;
+  }
+
+  let num = parseFloat(size);
+  let numLength = ('' + num).length;
+  let unit = size[numLength];
+
+  let unitIndex = UNITS.indexOf(unit);
+
+  if (unitIndex < 0) {
+    return num;
+  }
+
+  return Math.pow(1024, unitIndex) * num; 
 }

@@ -29,7 +29,7 @@ export class Analyzer {
       let audio: MediaFormat;
       let video: MediaFormat;
 
-      if (preset.video) {
+      if (preset.videoSort) {
           let matchingVideoFormats = info.formats.filter(this._createVideoFilter(preset)).sort(this._createVideoCompare(preset));
           if (matchingVideoFormats.length) {
               video = matchingVideoFormats[0];

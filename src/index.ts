@@ -19,7 +19,7 @@ export interface DownloadOptions {
   preset?: string;
   dir?: string;
   template?: string;
-  info?: (info: FormatInfo, cancel: () => void) => void;
+  info?: (info: FormatInfo, cancel: (msg?: string) => void) => void;
   progress?: (data: ProgressData) => void;
 }
 
@@ -34,7 +34,7 @@ export class Pully {
   
   public download(url: string, preset?: string): Promise<DownloadResults>;
   public download(options: DownloadOptions): Promise<DownloadResults>;
-  public download(input: string|DownloadOptions, preset?: string): Promise<DownloadResults> {
+  public download(input: string | DownloadOptions, preset?: string): Promise<DownloadResults> {
     if (typeof input === 'string') {
       input = {
         url: input,
@@ -42,24 +42,28 @@ export class Pully {
       };
     }
 
-    this._validateUrl(input.url);
+    return this._validateOptions(input).then((input) => {
+      let specifiedDir = input.dir || this._config.dir;
 
-    let specifiedDir = input.dir || this._config.dir;
+      const options: DownloadConfig = {
+        url: input.url,
+        preset: this._presets[input.preset || this._config.preset || Presets.HD],
+        dir: specifiedDir ? resolve(specifiedDir) : null,
+        template: template(input.template || DEFAULT_TEMPLATE),
+        info: input.info || this._config.verify || (() => { }),
+        progress: input.progress
+      };
 
-    const options: DownloadConfig = {
-      url: input.url,
-      preset: this._presets[input.preset || this._config.preset || Presets.HD],
-      dir: specifiedDir ? resolve(specifiedDir) : null,
-      template: template(input.template || DEFAULT_TEMPLATE),
-      info: input.info || this._config.verify || (() => { }),
-      progress: input.progress
-    };
-
-    return this._beginDownload(options);
+      return this._beginDownload(options);
+    });
   }
 
-  private _validateUrl(url: string): void {
-    // TODO: Check to make sure it is a valid URL...
+  private _validateOptions(input: DownloadOptions): Promise<DownloadOptions> {
+    if (!input.url) {
+      return Promise.reject(new Error(`"${input.url}" is not a valid YouTube URL!`));
+    }
+
+    return Promise.resolve(input);
   }
 
   private _registerPresets(presets: Array<Preset> | Lookup<Preset>): this {

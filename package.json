@@ -65,7 +65,9 @@
       "dist/**/*.js"
     ],
     "exclude": [
-      "dist/**/*.spec.js"
+      "dist/**/*.spec.js",
+      "dist/bin/pully.js",
+      "dist/example.js"
     ]
   }
 }

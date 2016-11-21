@@ -63,10 +63,10 @@ export class Download {
   private _getFormats(): Promise<void> {
     return this._analyzer.getRequiredFormats(this._config.url, this._config.preset)
       .then(format => {
-        let cancelled = false;
-        return Promise.resolve(this._config.info(format, () => cancelled = true)).then(() => {
-          if (cancelled) {
-            throw new Error(CANCELLED_MESSAGE);
+        let cancelledReason: string;
+        return Promise.resolve(this._config.info(format, (msg) => cancelledReason = msg)).then(() => {
+          if (cancelledReason) {
+            throw new Error(cancelledReason);
           } else {
             this._format = format;
           }

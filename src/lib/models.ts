@@ -25,7 +25,7 @@ export interface DownloadConfig {
   preset?: Preset;
   dir?: string;
   template?: (data: MediaInfo) => string;
-  info?: (info: FormatInfo, cancel: () => void) => void;
+  info?: (info: FormatInfo, cancel: (msg: string) => void) => void;
   progress?: (data: ProgressData) => void;
 }
 
@@ -96,7 +96,6 @@ export interface Preset {
   maxFps?: number;
   maxResolution?: number;
   maxAudioBitrate?: number;
-  video?: boolean;
   videoFilters?: Array<(format: MediaFormat, preset: Preset) => boolean>;
   videoSort?: Array<(a: MediaFormat, b: MediaFormat) => number>;
   audioFilters?: Array<(format: MediaFormat, preset: Preset) => boolean>;

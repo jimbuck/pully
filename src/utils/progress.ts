@@ -24,11 +24,15 @@ export class ProgressBar {
   private _indeterminateBar: Array<string>;
 
   private get _remaining(): number {
+    if (typeof this._progress !== 'number' || isNaN(this._progress)) {
+      return 1;
+    }
+
     return 1 - this._progress;
   }
 
   private get _eta(): number {
-    if (typeof this._progress !== 'number') {
+    if (typeof this._progress !== 'number' || isNaN(this._progress) || this._progress === 0) {
       return null;
     }
 
@@ -50,13 +54,17 @@ export class ProgressBar {
   }
 
   public tick(progress?: number, data?: any) {
-    this._start || (this._start = Date.now());
+    this._start = this._start || Date.now();
 
     this._progress = progress;
     const bar = typeof progress === 'number' ? this._renderStandardBar() : this._renderIndeterminateBar();
     const outStr = this._template(bar, toHumanTime(this._eta));
 
-    logUpdate(outStr);
+    this.log(outStr);
+  }
+
+  public log(msg: string): void {
+    logUpdate(msg);
   }
 
   public done(): void {
