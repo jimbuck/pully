@@ -25,7 +25,13 @@ Note that pully requires `ffmpeg` to be installed. [fluent-ffmpeg](https://www.n
 ### Usage
 
 ```bash
-pully <url> [-p <preset>="hd"] [-d <outputDir>="."] [-t <filenameTemplate>="${author}/${title}"] [--silent]
+pully download <url> [-p <preset>="hd"] [-d <outputDir>="."] [-t <filenameTemplate>="${author}/${title}"] [--silent]
+
+pully set dir "~/Jim/videos/YouTube"
+
+pully get dir # Prints ~/Jim/videos/YouTube
+
+pully dl <url> # Downloads specified video to ~/Jim/videos/YouTube/<author>/<title>.mp4
 ```
 
 Downloads a specified video based on a preset, defaulting to HD (see below). By default the file is named after the title and placed in a folder named after the author.
@@ -39,7 +45,7 @@ Presets are used in the CLI version to simplify getting the video you want. Pres
 - `4k` This will download the best video up to `2160p60`.
 - `max` This will download the best video, no limits on resolution or framerate.
 - `hfr` This will download the video with the highest framerate.
-- `audio` This will only download the audio as `mp3`.
+- `mp3` This will only download the audio only, and convert it to `mp3`.
 
 ## Node Module
 

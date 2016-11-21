@@ -5,6 +5,7 @@ const program = require('commander');
 const updateNotifier = require('update-notifier');
 const chalk = require('chalk');
 const logUpdate = require('log-update');
+const Conf = require('conf');
 
 import { DownloadOptions, ProgressData, DownloadResults } from '../';
 import { toHumanSize, toHumanTime } from '../utils/human';
@@ -13,64 +14,104 @@ import { ProgressBar } from '../utils/progress';
 const pkg = require(join(__dirname, '../../package.json'));
 updateNotifier({ pkg }).notify();
 
-const progressBar: ProgressBar = new ProgressBar();
+const config = new Conf();
+let progressBar: ProgressBar;
 
 // Convert -v to -V so version works correctly...
-var vPos = process.argv.indexOf('-v')
-if (vPos > -1) {
-  process.argv[vPos] = '-V'
-}
+swapArgs('-v', '-V');
+swapArgs('/?', '-h');
 
 program
-  .version(pkg.version)
-  .arguments('<url>')
+  .command('download <url>').alias('dl')
   .description('Downloads a video from the YouTube link.')
-  .option('-p, --preset <preset>', 'The preset format to download.', 'hd')
-  .option('-d, --dir <dir>', 'The location to save the download.', './')
-  .option('-t, --template <template>', 'The format of the the filename, recursively creating missing subfolders.', '${author}/${title}')
-  .option('-s, --silent', 'Which setup mode to use')
+  .option('-p, --preset <preset>', 'The preset format to download.')
+  .option('-d, --dir <dir>', 'The location to save the download.')
+  .option('-t, --template <template>', 'The format of the the filename, recursively creating missing subfolders.')
+  .option('-s, --silent', 'Hides all output.')
   .action(function (url: string, options: any) {
     options.url = url;
     
-    mergeOptions(options).then(download);
-  })
+    return mergeOptions(options)
+      .then((options => {
+        return new Pully().download(options);
+      }))
+      .then((result) => {
+        options.silent || logUpdate(`${chalk.magenta(result.format.info.title)} saved as ${chalk.green(result.path)}`);
+        process.exit(0);
+      }, err => {
+        if (!options.silent) {
+          try {
+            logUpdate(chalk.red(err.toString()));
+          } catch (ex) {
+            logUpdate.clear();
+            console.error(err);
+          }
+        }
+
+        process.exit(1);
+      });
+  });
+
+program
+  .command('get [key]')
+  .description('Gets the global config values or the config value if the key is specified.')
+  .action((key: string) => {
+    console.log(configStore(key));
+    return process.exit(0);
+  });
+
+program
+  .command('set <key> <value>')
+  .description('Sets a value in the global config. The values will be used when downloading.')
+  .action((key: string, value: any) => {
+    configStore(key, value);
+    return process.exit(0);
+  });
+
+program
+  .version(pkg.version)  
   .parse(process.argv);
 
 
-// Show help if no other commands match...
+// Show help if no arguments were specified...
 if (!program.args.length) {
   program.help();
   process.exit(0);
 }
 
-
+function configStore(key?: string, value?: any): any {
+  if (!key) {
+    return config.get('config');
+  } else {
+    if (typeof value === 'undefined') {
+      return config.get(`config.${key}`);
+    } else {
+      return config.set(`config.${key}`, value);
+    }
+  }
+}
 
 function mergeOptions(options: any): Promise<any> {
   
   const defaultOptions = getDefaultOptions(options);
-  const globalOptions = {}; // TODO: Pull from conf instead...
+  const globalOptions = configStore();
 
   return Promise.resolve(Object.assign(defaultOptions, globalOptions, options));
 }
 
-function download(options: any): Promise<void> {
-  return new Pully().download(options).then((result) => {
-    progressBar.clear();
-    options.silent || console.log(`Download saved to: "${chalk.green(result.path)}"`);
-var vPos = process.argv.indexOf('-v')
-if (vPos > -1) {
-  process.argv[vPos] = '-V'
-}    process.exit(0);
-  }, err => {
-    options.silent || console.error(err);
-    process.exit(1);
-  });
-}
 
 function getDefaultOptions(options: any): DownloadOptions {
   return {
+    preset: 'hd',
+    dir: '.',
+    template: '${author}/${title}',
     info: (format, cancel) => {
-      console.log(`Downloading "${chalk.cyan(format.info.title)}" by ${chalk.cyan(format.info.author)} (${chalk.blue(toHumanSize(format.info.downloadSize))})...`);
+      progressBar = new ProgressBar({
+        template: (bar, eta) => {
+          return `Downloading ${chalk.magenta(format.info.title)} by ${chalk.magenta(format.info.author)} (${chalk.cyan(toHumanSize(format.info.downloadSize))})
+  ${bar} ${chalk.yellow(eta)}`;
+         }
+       });
     },
     progress: (data: ProgressData) => {
       if (options.silent) {
@@ -78,14 +119,19 @@ function getDefaultOptions(options: any): DownloadOptions {
       }
 
       if (data.indeterminate) {
-        // TODO: Show spinner...
         progressBar.tick();
       } else {
-        // TODO: Show progress bar...
         progressBar.tick(data.progress);
       }
     }
   } as DownloadOptions;
+}
+
+function swapArgs(origArg: string, newArg: string): void {
+  var index = process.argv.indexOf(origArg)
+  if (index > -1) {
+    process.argv[index] = newArg;
+  }
 }
 
 // Mock Pully:
@@ -96,16 +142,18 @@ class Pully {
     const totalBytes = 190000 + (Math.floor(Math.random() * 20000));
     const downloadRate = Math.floor(totalBytes / 31);
     let downloadedBytes = 0;
+
+    const format = {
+      info: {
+        title: 'Some Fake Video',
+        author: 'Really Cool Person',
+        downloadSize: totalBytes
+      }
+    };
     
     return new Promise((resolve, reject) => {
       let cancelled = false;
-      options.info({
-        info: {
-          title: 'Some Fake Video',
-          author: 'Really Cool Person',
-          downloadSize: totalBytes
-        }
-      }, () => cancelled = true);
+      options.info(format, () => cancelled = true);
 
       if (cancelled) {
         return reject(new Error('CANCELLED'));
@@ -133,21 +181,19 @@ class Pully {
         }
       }
 
-      let mergeCount = 60 + Math.floor(Math.random() * 10);
+      let mergeCount = 100 + Math.floor(Math.random() * 50);
 
       function mergeTick() {
         if (mergeCount-- <= 0) {
           return resolve({
             path: '/not/a/real/download.mp4',
-            format: null
+            format
           } as DownloadResults);
         }
 
-        options.progress({
-          indeterminate: true
-        });
+        options.progress({ indeterminate: true });
 
-        setTimeout(mergeTick, Math.floor(Math.random() * maxDelay * 0.1));
+        setTimeout(mergeTick, Math.floor(Math.random() * maxDelay/5));
       }
     });
   }

@@ -8,7 +8,7 @@ export interface ProgressBarOptions {
   width?: number;
   complete?: string;
   incomplete?: string;
-  template?: (bar: string) => string;
+  template?: (bar: string, eta: string) => string;
 }
 
 // Custom, lightweight implementation of a
@@ -18,7 +18,7 @@ export class ProgressBar {
   private _width: number;
   private _completeChar: string;
   private _incompleteChar: string;
-  private _template: (bar: string) => string;
+  private _template: (bar: string, eta: string) => string;
 
   private _start: number;
   private _indeterminateBar: Array<string>;
@@ -28,6 +28,10 @@ export class ProgressBar {
   }
 
   private get _eta(): number {
+    if (typeof this._progress !== 'number') {
+      return null;
+    }
+
     if (this._progress === 1) {
       return 0;
     }
@@ -35,22 +39,22 @@ export class ProgressBar {
     const elapsed = (Date.now() - this._start) / 1000;
     return Math.ceil(elapsed * this._remaining / this._progress);
   }
-
+  
   constructor(options: ProgressBarOptions = {}) {
     this._progress = 0;
     this._width = options.width || 40;
     this._completeChar = options.complete || chalk.green('█');
     this._incompleteChar = options.incomplete || chalk.gray('█');
-    this._template = options.template || (bar => `${bar} (${toHumanTime(this._eta)}s)`);
+    this._template = options.template || ((bar, eta) => `${bar} ${eta}`);
     this._indeterminateBar = this._createIndeterminateBar();
   }
 
-  public tick(progress?: number) {
+  public tick(progress?: number, data?: any) {
     this._start || (this._start = Date.now());
 
     this._progress = progress;
     const bar = typeof progress === 'number' ? this._renderStandardBar() : this._renderIndeterminateBar();
-    const outStr = this._template(bar);
+    const outStr = this._template(bar, toHumanTime(this._eta));
 
     logUpdate(outStr);
   }
@@ -64,9 +68,10 @@ export class ProgressBar {
   }
 
   private _createIndeterminateBar(): Array<string> {
-    let active = Math.floor(this._width * 0.333);
-    let inactive = this._width - active;
-    return Array(active).fill(this._completeChar).concat(Array(inactive).fill(this._incompleteChar));
+    const activeWidth = Math.floor(this._width * 0.33333333);
+    const inactiveWidth = this._width - activeWidth;
+
+    return Array(activeWidth).fill(this._completeChar).concat(Array(inactiveWidth).fill(this._incompleteChar));
   }
 
   private _renderStandardBar(): string {
