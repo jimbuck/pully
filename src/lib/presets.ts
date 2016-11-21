@@ -58,14 +58,14 @@ const hfrPreset = override(hdPreset, {
   videoSort: [fpsSort, resolutionSort]
 });
 
-const audioPreset: Preset = {
-  name: 'audio',
+const mp3Preset: Preset = {
+  name: 'mp3',
   outputFormat: 'mp3',
   video: false,
   audioSort: [audioBitrateSort]
 };
 
-export const DefaultPresets = [maxPreset, fourKPreset, twoKPreset, hdPreset, hfrPreset, audioPreset];
+export const DefaultPresets = [maxPreset, fourKPreset, twoKPreset, hdPreset, hfrPreset, mp3Preset];
 
 export const Presets = {
   Max: maxPreset.name,
@@ -73,5 +73,5 @@ export const Presets = {
   TwoK: twoKPreset.name,
   HD: hdPreset.name,
   HFR: hfrPreset.name,
-  Audio: audioPreset.name
+  MP3: mp3Preset.name
 };
