@@ -21,6 +21,10 @@
     "type": "git"
   },
   "author": "Jim Buck <jim@jimmyboh.com>",
+  "contributors": [
+    "Eirik Albrigtsen <analsandblaster@gmail.com>",
+    "Mario Tacke <https://mariotacke.io/>"
+  ],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/JimmyBoh/pully/issues"
@@ -29,7 +33,7 @@
   "devDependencies": {
     "@types/node": "^6.0.46",
     "ava": "^0.16.0",
-    "coveralls": "^2.11.14",
+    "coveralls": "^2.11.15",
     "del": "^2.2.2",
     "gulp": "^3.9.1",
     "gulp-shell": "^0.5.2",
