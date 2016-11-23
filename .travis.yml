@@ -1,5 +1,5 @@
 before_install:
-  - ./travis-setup.sh
+  - sudo ./travis-setup.sh
 language: node_js
 node_js:
   - "node"
