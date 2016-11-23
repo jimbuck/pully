@@ -5,15 +5,15 @@ let logUpdate = require('log-update');
 import { ProgressBar, ProgressBarOptions } from './progress';
 
 test(`ProgressBar does not require parameters`, t => {
-  let p: ProgressBar;
-  t.notThrows(() => p = new ProgressBar());
+  let p: ProgressBar<void>;
+  t.notThrows(() => p = new ProgressBar<void>());
   t.is(p['_progress'], 0);
   t.is(p['_width'], 40);
   t.is(p['_completeChar'], chalk.green('█'));
   t.is(p['_incompleteChar'], chalk.gray('█'));
   t.is(p['_indeterminateBar'].length, p['_width']);
 
-  p = new ProgressBar({
+  p = new ProgressBar<void>({
     complete: 'Y',
     incomplete: 'N',
     width: 12
@@ -53,7 +53,7 @@ test(`ProgressBar#tick without progress shifts the indeterminate bar`, t => {
   }
 });
 
-function createProgressBar(options?: ProgressBarOptions) {
+function createProgressBar(options?: ProgressBarOptions<void>) {
   const p = new ProgressBar(options);
 
   p.log = function () { };

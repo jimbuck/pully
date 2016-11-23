@@ -28,13 +28,16 @@ const baseVideoPreset: Preset = {
   name: null,
   outputFormat: 'mp4',
   videoFilters: [resolutionFilter, fpsFilter],
-  videoSort: [resolutionSort, fpsSort]
+  videoSort: [resolutionSort, fpsSort],
+  audioSort: [audioBitrateSort],
+  maxAudioBitrate: 128
 };
 
 const maxPreset: Preset = override(baseVideoPreset, {
   name: 'max',
   maxResolution: Number.MAX_SAFE_INTEGER,
-  maxFps: Number.MAX_SAFE_INTEGER
+  maxFps: Number.MAX_SAFE_INTEGER,
+  maxAudioBitrate: Number.MAX_SAFE_INTEGER
 });
 
 const fourKPreset = override(maxPreset, {

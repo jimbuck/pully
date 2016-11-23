@@ -24,7 +24,7 @@ export class Analyzer {
     });
   }
 
-  private _determineBestFormats(info: MediaInfo, preset: Preset): FormatInfo {
+  private _determineBestFormats(info: MediaInfo, preset: Preset): Promise<FormatInfo> {
     
       let audio: MediaFormat;
       let video: MediaFormat;
@@ -35,16 +35,22 @@ export class Analyzer {
               video = matchingVideoFormats[0];
 
               video && (info.downloadSize += video.downloadSize || 0);
+          } else {
+              return Promise.reject(new Error(`No matching video stream!`));
           }
       }
 
-      let matchingAudioFormats = info.formats.filter(this._createAudioFilter(preset)).sort(this._createAudioCompare(preset));
-      if (matchingAudioFormats.length) {
-          audio = matchingAudioFormats[0];
-          audio && (info.downloadSize += audio.downloadSize || 0);
-      } 
+      if (preset.audioSort) {
+          let matchingAudioFormats = info.formats.filter(this._createAudioFilter(preset)).sort(this._createAudioCompare(preset));
+          if (matchingAudioFormats.length) {
+              audio = matchingAudioFormats[0];
+              audio && (info.downloadSize += audio.downloadSize || 0);
+          } else {
+              return Promise.reject(new Error(`No matching audio stream!`));
+          }
+      }
 
-      return { info, audio, video };
+      return Promise.resolve({ info, audio, video });
   }
 
   private _createVideoFilter(preset: Preset) {

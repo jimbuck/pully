@@ -24,11 +24,7 @@ class Tasks {
   }
 
   static get test() {
-    return shell.task('nyc --color -a ava -v');
-  }
-
-  static get coverage() {
-    return shell.task(`nyc --reporter=lcov -a ava -v & start ${paths.coverage}lcov-report/index.html`);
+    return shell.task(`nyc --color --reporter=text --reporter=lcov -a ava -v`);
   }
 
   static watch() {
@@ -45,8 +41,7 @@ Everything you need to know:
 
      clean - Deletes all generated files.
    * build - Builds all source files. (default)
-      test - Runs the test suite.
-  coverage - Runs the tests and opens the coverage report.
+      test - Runs the test suite and updates coverage.
      watch - Runs tests upon source changes.
 bump:major - Upgrades the package's major version.
 bump:minor - Upgrades the package's minor version.
@@ -63,9 +58,6 @@ gulp.task('build', ['clean'], Tasks.buildSrc);
 
 // Run the basic `npm test` command after a quick build...
 gulp.task('test', ['build'], Tasks.test);
-
-// Run tests, generate the HTML coverage report and open the browser.
-gulp.task('coverage', ['build'], Tasks.coverage);
 
 // Used for better development (watch with TAP output) (but also because we now are moving more files around)
 gulp.task('watch', ['build'], Tasks.watch);

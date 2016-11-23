@@ -15,11 +15,10 @@ const pkg = require(join(__dirname, '../../package.json'));
 updateNotifier({ pkg }).notify();
 
 const config = new Conf();
-let progressBar: ProgressBar;
+let progressBar: ProgressBar<ProgressData>;
 
-// Convert -v to -V so version works correctly...
-swapArgs('-v', '-V');
-swapArgs('/?', '-h');
+swapArgs('-v', '-V'); // Convert -v to -V so version works correctly...
+swapArgs('/?', '-h'); // Convert /? to also show help info...
 
 program
   .command('download <url>').alias('dl')
@@ -36,9 +35,9 @@ program
       .then((options => {
         return new Pully().download(options);
       }))
-      .then((result) => {
+      .then((result: DownloadResults) => {
         options.silent || logUpdate(`${chalk.magenta(result.format.info.title)} saved as
-  ${chalk.green(result.path)}`);
+  ${chalk.green(result.path)} [${toHumanTime(result.duration / 1000)}]`);
         process.exit(0);
       }, err => {
         if (!options.silent) {
@@ -67,6 +66,16 @@ program
   .description('Sets a value in the global config. The values will be used when downloading.')
   .action((key: string, value: any) => {
     configStore(key, value);
+    console.log(configStore());
+    return process.exit(0);
+  });
+
+program
+  .command('delete <key>').alias(['del'])
+  .description('Deletes a value in the global config.')
+  .action((key: string) => {
+    configStoreDelete(key);
+    console.log(configStore());
     return process.exit(0);
   });
 
@@ -93,6 +102,10 @@ function configStore(key?: string, value?: any): any {
   }
 }
 
+function configStoreDelete(key: string): void {
+  config.delete(`config.${key}`);
+}
+
 function mergeOptions(options: any): Promise<any> {
   
   const defaultOptions = getDefaultOptions(options);
@@ -111,13 +124,22 @@ function getDefaultOptions(options: any): DownloadOptions {
       let sizeLimit = fromHumanSize(options.limit);
       let approxSize = fromHumanSize(toHumanSize(format.info.downloadSize));
       if (options.limit && approxSize > sizeLimit) {
-        return cancel(`Download cancelled: size of ${toHumanSize(format.info.downloadSize)} is greater than ${options.limit} limit!`);
+        return cancel(`Download cancelled: ${toHumanSize(format.info.downloadSize)} download exceeds the ${options.limit} limit!`);
       }
 
-      progressBar = new ProgressBar({
-        template: (bar, eta) => {
-          return `Downloading ${chalk.magenta(format.info.title)} by ${chalk.magenta(format.info.author)} (${chalk.cyan(toHumanSize(format.info.downloadSize))})
-  ${bar} ${chalk.yellow(eta)}`;
+      progressBar = new ProgressBar<ProgressData>({
+        width: 60,
+        template: (el) => {
+          const title = chalk.magenta(format.info.title);
+          const author = chalk.magenta(format.info.author);
+          const downloadSize = chalk.cyan(toHumanSize(format.info.downloadSize));
+          const elapsed = chalk.yellow(el.elapsed);
+          const percent = el.data.percent ? chalk.green((el.data.percent || 100).toFixed(1) + '%') : '';
+          const eta = el.eta ? chalk.yellow(el.eta) : '';
+          const speed = el.speed ? ('(' + chalk.cyan(toHumanSize(el.speed * el.data.downloadedBytes) + '/s') + ')') : '';
+
+          return `Downloading ${title} by ${author} (${downloadSize})
+  ${elapsed} ${percent} ${el.bar} ${eta} ${speed}`;
          }
        });
     },
@@ -127,9 +149,9 @@ function getDefaultOptions(options: any): DownloadOptions {
       }
 
       if (data.indeterminate) {
-        progressBar.tick();
+        progressBar.tick(null, data);
       } else {
-        progressBar.tick(data.progress);
+        progressBar.tick(data.progress, data);
       }
     }
   } as DownloadOptions;
@@ -141,68 +163,3 @@ function swapArgs(origArg: string, newArg: string): void {
     process.argv[index] = newArg;
   }
 }
-
-// Mock Pully:
-// class Pully {
-//   public download(options: DownloadOptions): Promise<DownloadResults> {
-//     const maxDelay = 500;
-
-//     const totalBytes = 190000 + (Math.floor(Math.random() * 20000));
-//     const downloadRate = Math.floor(totalBytes / 31);
-//     let downloadedBytes = 0;
-
-//     const format = {
-//       info: {
-//         title: 'Some Fake Video',
-//         author: 'Really Cool Person',
-//         downloadSize: totalBytes
-//       }
-//     };
-    
-//     return new Promise((resolve, reject) => {
-//       let cancelled = false;
-//       options.info(format, () => cancelled = true);
-
-//       if (cancelled) {
-//         return reject(new Error('CANCELLED'));
-//       }
-
-//       downloadTick();
-
-//       function downloadTick() {
-//         let remainingBytes = totalBytes - downloadedBytes;
-//         downloadedBytes += Math.min(downloadRate, remainingBytes);
-
-//         let progress = downloadedBytes / totalBytes;
-
-//         options.progress({
-//           downloadedBytes,
-//           totalBytes,
-//           progress,
-//           percent: Math.floor((progress * 10000)) / 100
-//         });
-
-//         if (progress >= 1) {
-//           setTimeout(mergeTick, Math.floor(Math.random() * maxDelay));
-//         } else {
-//           setTimeout(downloadTick, Math.floor(Math.random() * maxDelay))
-//         }
-//       }
-
-//       let mergeCount = 100 + Math.floor(Math.random() * 50);
-
-//       function mergeTick() {
-//         if (mergeCount-- <= 0) {
-//           return resolve({
-//             path: '/not/a/real/download.mp4',
-//             format
-//           } as DownloadResults);
-//         }
-
-//         options.progress({ indeterminate: true });
-
-//         setTimeout(mergeTick, Math.floor(Math.random() * maxDelay/5));
-//       }
-//     });
-//   }
-// }

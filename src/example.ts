@@ -1,7 +1,8 @@
 import { Pully, Presets } from './index';
 
 //const testVideo = 'https://www.youtube.com/watch?v=HQCZRm8QlPE'; // 22s with music (9MB)
-const testVideo = 'https://www.youtube.com/watch?v=2PuFyjAs7JA';   // 11s with silence (2.5MB)
+//const testVideo = 'https://www.youtube.com/watch?v=2PuFyjAs7JA';   // 11s with silence (2.5MB)
+const testVideo = 'https://www.youtube.com/watch?v=aqz-KE-bpKQ'; // Big Buck Bunny, 10:34 4K (? MB)
 
 let p = new Pully();
 

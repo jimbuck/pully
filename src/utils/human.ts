@@ -9,7 +9,7 @@ const LOG_1024 = Math.log(1024);
  * @param {Number} seconds
  * @return {String}
  */
-export function toHumanTime(seconds: number): string {
+export function toHumanTime(seconds: number, decimals: number = 0): string {
   if (typeof seconds !== 'number' || isNaN(seconds) || !Number.isFinite(seconds)) {
     return '';
   }
@@ -28,7 +28,11 @@ export function toHumanTime(seconds: number): string {
   }
 
   let s: string | number = seconds % 60;
-  if (s < 10) { s = '0' + s; }
+  if (s < 10) {
+    s = '0' + s.toFixed(decimals);
+  } else {
+    s = s.toFixed(decimals);
+  }
 
   return time + m + ':' + s;
 }

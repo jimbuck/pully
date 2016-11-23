@@ -32,6 +32,7 @@ export interface DownloadConfig {
 export interface DownloadResults {
   path?: string;
   format: FormatInfo;
+  duration: number;
 }
 
 export class MediaInfo

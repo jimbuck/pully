@@ -35,6 +35,7 @@ export class Pully {
   public download(url: string, preset?: string): Promise<DownloadResults>;
   public download(options: DownloadOptions): Promise<DownloadResults>;
   public download(input: string | DownloadOptions, preset?: string): Promise<DownloadResults> {
+    let start = Date.now();
     if (typeof input === 'string') {
       input = {
         url: input,
@@ -54,11 +55,19 @@ export class Pully {
         progress: input.progress
       };
 
-      return this._beginDownload(options);
+      return this._beginDownload(options).then(results => {
+        results.duration = (Date.now() - start); 
+
+        return results;
+      });
     });
   }
 
   private _validateOptions(input: DownloadOptions): Promise<DownloadOptions> {
+    if (!input) {
+      return Promise.reject(new Error(`No options detected!`));
+    }
+    
     if (!input.url) {
       return Promise.reject(new Error(`"${input.url}" is not a valid YouTube URL!`));
     }
@@ -82,7 +91,7 @@ export class Pully {
 
   private _beginDownload(config: DownloadConfig): Promise<DownloadResults> {
     if (!config.preset) {
-      throw new Error(`NO PRESET "${config.preset}"!`);
+      throw new Error(`No preset "${config.preset}"!`);
     }
 
     return new Download(config).start();
