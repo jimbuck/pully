@@ -1,6 +1,13 @@
 before_install:
-  - sudo ./travis-setup.sh
+  - ./travis-setup.sh
 language: node_js
+addons:
+  apt:
+    packages:
+    - wget
+    - tar
+    - bzip2
+    - flvtool2
 node_js:
   - "node"
   - "6"

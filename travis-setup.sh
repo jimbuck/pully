@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Stop on error, print each line before running
-set -ev
+set -ex
 
 # Install dependencies
 
