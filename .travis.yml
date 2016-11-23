@@ -1,6 +1,6 @@
 before_install:
   - sudo apt-get -qq update
-  - sudo apt-get install -y ffmpeg
+  - sudo apt-get install -y libav-tools
 language: node_js
 node_js:
   - "node"
