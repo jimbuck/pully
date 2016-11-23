@@ -1,0 +1,58 @@
+{
+  // Use IntelliSense to learn about possible Node.js debug attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Download Video",
+      "program": "${workspaceRoot}/dist/bin/pully.js",
+      "cwd": "${workspaceRoot}",
+      "args": [
+        "download", "https://www.youtube.com/watch?v=HQCZRm8QlPE"
+      ],
+      "outFiles": ["${workspaceRoot}/dist/**/*.js"],
+      "sourceMaps": true,
+      "preLaunchTask": "build",
+      "console": "externalTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Download Big Video",
+      "program": "${workspaceRoot}/dist/bin/pully.js",
+      "cwd": "${workspaceRoot}",
+      "args": [
+        "download", "https://www.youtube.com/watch?v=aqz-KE-bpKQ"
+      ],
+      "outFiles": ["${workspaceRoot}/dist/**/*.js"],
+      "sourceMaps": true,
+      "preLaunchTask": "build",
+      "console": "externalTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Download MP3",
+      "program": "${workspaceRoot}/dist/bin/pully.js",
+      "cwd": "${workspaceRoot}",
+      "args": [
+        "download", "https://www.youtube.com/watch?v=HQCZRm8QlPE", "--preset", "mp3"
+      ],
+      "outFiles": ["${workspaceRoot}/dist/**/*.js"],
+      "sourceMaps": true,
+      "preLaunchTask": "build",
+      "console": "externalTerminal"
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "Attach to Process",
+      "port": 5858,
+      "outFiles": [],
+      "sourceMaps": true
+    }
+  ]
+}

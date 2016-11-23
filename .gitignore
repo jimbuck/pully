@@ -35,7 +35,6 @@ coverage
 # Optional REPL history
 .node_repl_history
 
-.vscode
 dist
 output
 test
