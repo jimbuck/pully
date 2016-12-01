@@ -16,7 +16,7 @@ test.after(`Download Cleanup`, t => {
   downloadedFiles.forEach((value) => {
     try {
       unlinkSync(value);
-      console.log(`("${value} deleted successfully.)"`)
+      //console.log(`("${value} deleted successfully.)"`)
     } catch (err) {
       console.warn(err);
     }
