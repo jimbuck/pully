@@ -1,12 +1,14 @@
 import { unlinkSync } from 'fs';
 
-import { test } from 'ava';
+import { test, ContextualTest } from 'ava';
 
 import { Pully, Presets, DownloadOptions, DownloadResults } from './index';
 
 
-const shortVideo = 'https://www.youtube.com/watch?v=HQCZRm8QlPE';
-const longVideo = 'https://www.youtube.com/watch?v=aqz-KE-bpKQ';
+const testVideo = process.env.PULLY_TEST_VIDEO;
+
+//const shortVideo = 'https://www.youtube.com/watch?v=HQCZRm8QlPE';
+//const longVideo = 'https://www.youtube.com/watch?v=aqz-KE-bpKQ';
 
 const downloadedFiles = new Set<string>();
 
@@ -35,29 +37,28 @@ test(`Pully has predefined presets`, t => {
 });
 
 test(`Pully#download requires a URL`, async (t) => {
-  let p = new Pully();
+  const p = new Pully();
 
   t.throws(p.download(null));
   t.throws(p.download(null, 'hd'));
   t.throws(p.download({ url: null }));
 });
 
-test(`Pully#download defaults to 'hd' preset`, async (t) => {
+testIf(testVideo, `Pully#download defaults to 'hd' preset`, async (t) => {
   const p = new Pully();
 
-  const result = await p.download(shortVideo);
+  const result = await p.download(testVideo);
   downloadedFiles.add(result.path);
   
   t.is(typeof result.path, 'string');
   t.is(result.format.video.resolution, 1080);
   t.true(result.path.endsWith('.mp4'));
-
 });
 
-test(`Pully#download accepts preset strings`, async (t) => {
+testIf(testVideo, `Pully#download accepts preset strings`, async (t) => {
   const p = new Pully();
 
-  const result = await p.download(shortVideo, 'mp3');
+  const result = await p.download(testVideo, 'mp3');
   downloadedFiles.add(result.path);
   
   t.is(typeof result.path, 'string');
@@ -65,11 +66,11 @@ test(`Pully#download accepts preset strings`, async (t) => {
   t.true(result.path.endsWith('.mp3'));
 });
 
-test(`Pully#download accepts options hash`, async (t) => {
+testIf(testVideo, `Pully#download accepts options hash`, async (t) => {
   const p = new Pully();
 
   const result = await p.download({
-    url: shortVideo,
+    url: testVideo,
     preset: Presets.MP3,
   });
   downloadedFiles.add(result.path);
@@ -78,3 +79,11 @@ test(`Pully#download accepts options hash`, async (t) => {
   t.falsy(result.format.video);
   t.true(result.path.endsWith('.mp3'));
 });
+
+function testIf(condition: boolean, title: string, func: ContextualTest): void {
+  if(condition){
+    test(title, func);
+  } else {
+    test.skip(title, func);
+  }
+}
