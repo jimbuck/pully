@@ -54,6 +54,7 @@
     "mkdirp-promise": "^4.0.1",
     "sanitize-filename": "^1.6.1",
     "tmp": "0.0.30",
+    "universal-analytics": "^0.4.8",
     "update-notifier": "^1.0.2",
     "ytdl-core": "^0.7.19"
   },
