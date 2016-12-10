@@ -3,6 +3,7 @@
   "version": "2.1.2",
   "description": "A simple CLI for downloading high quality YouTube videos!",
   "main": "index.js",
+  "types": "./dist/index.d.ts",
   "bin": {
     "pully": "./dist/bin/pully.js"
   },
