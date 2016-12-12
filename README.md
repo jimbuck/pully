@@ -1,8 +1,12 @@
 # pully
 
-[![Travis-CI](https://img.shields.io/travis/JimmyBoh/pully/master.svg?style=flat-square)](https://travis-ci.org/JimmyBoh/pully)
-[![Dependency Status](https://img.shields.io/david/jimmyboh/pully.svg?style=flat-square)](https://david-dm.org/jimmyboh/pully)
-[![npm version](https://img.shields.io/npm/v/pully.svg?style=flat-square)](https://www.npmjs.com/package/pully)
+[![Build Status](https://img.shields.io/travis/JimmyBoh/pully/master.svg?style=flat-square)](https://travis-ci.org/JimmyBoh/pully)
+[![Code Coverage](https://img.shields.io/coveralls/JimmyBoh/pully/master.svg?style=flat-square)](https://coveralls.io/github/JimmyBoh/pully?branch=master)
+[![Dependencies](https://img.shields.io/david/JimmyBoh/pully.svg?style=flat-square)](https://david-dm.org/JimmyBoh/pully)
+[![DevDependencies](https://img.shields.io/david/dev/JimmyBoh/pully.svg?style=flat-square)](https://david-dm.org/JimmyBoh/pully?type=dev)
+[![npm](https://img.shields.io/npm/v/pully.svg?style=flat-square)](https://www.npmjs.com/package/pully)
+[![Monthly Downloads](https://img.shields.io/npm/dm/pully.svg?style=flat-square)](https://www.npmjs.com/package/pully)
+[![Total Downloads](https://img.shields.io/npm/dt/pully.svg?style=flat-square)](https://www.npmjs.com/package/pully)
 
 A simple CLI for downloading high quality Youtube videos!
 
