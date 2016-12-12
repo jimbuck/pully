@@ -25,7 +25,7 @@ export class UsageTracker {
     if (this._disabled) return;
 
     // TODO: Grab or create guid to keep track of the same users.
-    this._visitor = ua('UA-43395939-3', userId, { https: true });//.debug();
+    this._visitor = ua('UA-43395939-3', userId);//.debug();
   }
 
   public settingChanged(settingName: string): void {
