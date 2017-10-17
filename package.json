@@ -21,6 +21,13 @@
     "url": "git+https://github.com/JimmyBoh/pully.git",
     "type": "git"
   },
+  "keywords": [
+    "youtube",
+    "download",
+    "cli",
+    "ffmpeg",
+    "encode"
+  ],
   "author": "Jim Buck <jim@jimmyboh.com>",
   "contributors": [
     "Eirik Albrigtsen <analsandblaster@gmail.com>",
