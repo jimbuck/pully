@@ -1,4 +1,7 @@
 before_install:
+  - sudo add-apt-repository ppa:sauce/ppa -y
+  - sudo apt-get update -q
+  - sudo apt-get install flvtool2 -y
   - ./travis-setup.sh
 language: node_js
 addons:
@@ -7,7 +10,6 @@ addons:
     - wget
     - tar
     - bzip2
-    - flvtool2
 node_js:
   - "node"
   - "6"
