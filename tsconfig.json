@@ -9,7 +9,8 @@
     "rootDir": "src",
     "outDir": "dist",
     "declaration": true,
-    "noImplicitAny": true
+    "noImplicitAny": true,
+    "newLine": "lf"
   },
   "exclude": [
     "node_modules",

@@ -9,7 +9,7 @@ for (let i = 0; i < DefaultPresets.length; i++) {
         let a = new Analyzer();
       
         // TODO: Mock this call...
-        await a.getRequiredFormats('https://www.youtube.com/watch?v=HQCZRm8QlPE', preset).then(format => {
+        await a.getRequiredFormats('https://www.youtube.com/watch?v=oVXg7Grp1W8', preset).then(format => {
             if (preset.videoSort) {
                 t.truthy(format.video);
                 t.true(format.video.resolution <= preset.maxResolution);

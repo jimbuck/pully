@@ -6,11 +6,14 @@ const updateNotifier = require('update-notifier');
 const chalk = require('chalk');
 const logUpdate = require('log-update');
 const Conf = require('conf');
+import * as debug from 'debug';
 
 import { Pully, DownloadOptions, ProgressData, DownloadResults } from '../';
 import { toHumanTime, toHumanSize, fromHumanSize } from '../utils/human';
 import { ProgressBar } from '../utils/progress'; 
 import { UsageTracker } from '../utils/usage-tracker';
+
+const log = debug('pully:cli');
 
 const tracker = new UsageTracker();
 

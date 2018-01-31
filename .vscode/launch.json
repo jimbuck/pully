@@ -16,7 +16,10 @@
       "outFiles": ["${workspaceRoot}/dist/**/*.js"],
       "sourceMaps": true,
       "preLaunchTask": "build",
-      "console": "externalTerminal"
+      "console": "externalTerminal",
+      "env": {
+        "debug": "*"
+      }
     },
     {
       "type": "node",
@@ -30,7 +33,10 @@
       "outFiles": ["${workspaceRoot}/dist/**/*.js"],
       "sourceMaps": true,
       "preLaunchTask": "build",
-      "console": "externalTerminal"
+      "console": "externalTerminal",
+      "env": {
+        "debug": "*"
+      }
     },
     {
       "type": "node",
@@ -44,7 +50,10 @@
       "outFiles": ["${workspaceRoot}/dist/**/*.js"],
       "sourceMaps": true,
       "preLaunchTask": "build",
-      "console": "externalTerminal"
+      "console": "externalTerminal",
+      "env": {
+        "debug": "*"
+      }
     },
     {
       "type": "node",

@@ -5,10 +5,10 @@ import { test, ContextualTest } from 'ava';
 import { Pully, Presets, DownloadOptions, DownloadResults } from './index';
 
 
-const testVideo = process.env.PULLY_TEST_VIDEO;
+const testVideo = process.env.PULLY_TEST_VIDEO || 'https://www.youtube.com/watch?v=oVXg7Grp1W8';
 
-//const shortVideo = 'https://www.youtube.com/watch?v=HQCZRm8QlPE';
-//const longVideo = 'https://www.youtube.com/watch?v=aqz-KE-bpKQ';
+// 'https://www.youtube.com/watch?v=oVXg7Grp1W8'; // Short Video
+// 'https://www.youtube.com/watch?v=aqz-KE-bpKQ'; // Long Video
 
 const downloadedFiles = new Set<string>();
 
@@ -44,7 +44,7 @@ test(`Pully#download requires a URL`, async (t) => {
   t.throws(p.download({ url: null }));
 });
 
-testIf(testVideo, `Pully#download defaults to 'hd' preset`, async (t) => {
+testIf(!!testVideo, `Pully#download defaults to 'hd' preset`, async (t) => {
   const p = new Pully();
 
   const result = await p.download(testVideo);
@@ -55,7 +55,7 @@ testIf(testVideo, `Pully#download defaults to 'hd' preset`, async (t) => {
   t.true(result.path.endsWith('.mp4'));
 });
 
-testIf(testVideo, `Pully#download accepts preset strings`, async (t) => {
+testIf(!!testVideo, `Pully#download accepts preset strings`, async (t) => {
   const p = new Pully();
 
   const result = await p.download(testVideo, 'mp3');
@@ -66,7 +66,7 @@ testIf(testVideo, `Pully#download accepts preset strings`, async (t) => {
   t.true(result.path.endsWith('.mp3'));
 });
 
-testIf(testVideo, `Pully#download accepts options hash`, async (t) => {
+testIf(!!testVideo, `Pully#download accepts options hash`, async (t) => {
   const p = new Pully();
 
   const result = await p.download({
