@@ -4,6 +4,7 @@ import { test, ContextualTest } from 'ava';
 
 import { Pully, Presets, DownloadOptions, DownloadResults } from './index';
 
+const NOOP = () => { };
 
 const testVideo = process.env.PULLY_TEST_VIDEO || 'https://www.youtube.com/watch?v=oVXg7Grp1W8';
 
@@ -39,9 +40,17 @@ test(`Pully has predefined presets`, t => {
 test(`Pully#download requires a URL`, async (t) => {
   const p = new Pully();
 
-  t.throws(p.download(null));
-  t.throws(p.download(null, 'hd'));
-  t.throws(p.download({ url: null }));
+  t.plan(3);
+
+  let p1 = p.download(null);
+  let p2 = p.download(null, 'hd');
+  let p3 = p.download({ url: null });
+
+  t.throws(p1);
+  t.throws(p2);
+  t.throws(p3);
+
+  await Promise.all([p1.catch(NOOP), p2.catch(NOOP), p3.catch(NOOP)]);
 });
 
 testIf(!!testVideo, `Pully#download defaults to 'hd' preset`, async (t) => {

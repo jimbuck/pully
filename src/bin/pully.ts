@@ -11,11 +11,8 @@ import * as debug from 'debug';
 import { Pully, DownloadOptions, ProgressData, DownloadResults } from '../';
 import { toHumanTime, toHumanSize, fromHumanSize } from '../utils/human';
 import { ProgressBar } from '../utils/progress'; 
-import { UsageTracker } from '../utils/usage-tracker';
 
 const log = debug('pully:cli');
-
-const tracker = new UsageTracker();
 
 const pkg = require(join(__dirname, '../../package.json'));
 updateNotifier({ pkg }).notify();
@@ -24,7 +21,8 @@ const config = new Conf();
 let progressBar: ProgressBar<ProgressData>;
 
 // Log any unhandled exceptions...
-process.on('error', tracker.error.bind(tracker));
+process.on('uncaughtException', err => log(`uncaughtException: ${err}`, err));
+process.on('unhandledRejection', (err, promise) => log(`unhandledRejection: ${err}`, err, promise));
 
 swapArgs('-v', '-V'); // Convert -v to -V so version works correctly...
 swapArgs('/?', '-h'); // Convert /? to also show help info...
@@ -39,19 +37,15 @@ program
   .option('-s, --silent', 'Hides all output.')
   .action(function (url: string, options: any) {
     options.url = url;
-    let videoGuid: string;
     return mergeOptions(options)
       .then((options => {
-        videoGuid = tracker.downloadStarted(options.preset);
         return new Pully().download(options);
       }))
       .then((result: DownloadResults) => {
-        tracker.downloadCompleted(videoGuid, result.duration);
         options.silent || logUpdate(`${chalk.magenta(result.format.info.title)} saved as
   ${chalk.green(result.path)} [${toHumanTime(result.duration / 1000)}]`);
         process.exit(0);
       }, err => {
-        tracker.downloadFailed(videoGuid, err);
         if (!options.silent) {
           try {
             logUpdate(chalk.red(err.toString()));
@@ -77,7 +71,6 @@ program
   .command('set <key> <value>')
   .description('Sets a value in the global config. The values will be used when downloading.')
   .action((key: string, value: any) => {
-    tracker.settingChanged(key);
     configStore(key, value);
     console.log(configStore());
     return process.exit(0);
@@ -87,20 +80,17 @@ program
   .command('delete <key>').alias(['del'])
   .description('Deletes a value in the global config.')
   .action((key: string) => {
-    tracker.settingDeleted(key);
     configStoreDelete(key);
     console.log(configStore());
     return process.exit(0);
   });
 
 program.on('--help', () => {
-  tracker.helpCommand();
   console.log(`  Global Config Keys:
     preset       The preset to download (defaults to "hd").
     dir          The directory to download to (default to current directory).
     template     The filename template, uses \${notation} and respects subfolders (defaults to "\${author}\\\${title}").
     limit        The maximum filesize to download in MB, useful when bandwidth is limited (defaults to no limit).
-    analytics    Provide anonymous usage statistics to the developers. Set to 'off' to disable. (defaults to on).
 `);
 });
 
