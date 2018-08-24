@@ -7,6 +7,20 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Launch Debug",
+      "program": "${workspaceFolder}\\dist\\debug.js",
+      "preLaunchTask": "tsc: build - tsconfig.json",
+      "sourceMaps": true,
+      "env": {
+        "DEBUG": "*"
+      },
+      "outFiles": [
+        "${workspaceFolder}/dist/**/*.js"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Download Video",
       "program": "${workspaceRoot}/dist/bin/pully.js",
       "cwd": "${workspaceRoot}",
