@@ -12,7 +12,7 @@ A simple CLI for downloading high quality Youtube videos!
 
 This tool allows the downloading of Youtube videos of `1080p` and higher qualities. The video and audio is separate, so this combines them after downloading both.
 
-### ATTENTION:
+### ATTENTION
 
 While this tool makes it easy to download content from Youtube, I do not endorse the theft of content created by hardworking citizens of the Internet. If you use Youtube as a primary source of entertainment, then **please remember to _turn off ad-block_, _buy their merchandise_, or _donate_ to the content creators you love to watch.** And if you can't do that then simply like, comment, and subscribe to help them get more people enjoying their content.
 
@@ -77,15 +77,15 @@ pully.download(options).then((
   err => console.error(err) // Error info
 );
 ```
- 
+
 ## Contribute
- 
- 0. Fork it
- 1. `npm i`
- 2. `gulp watch`
- 3. Make changes and **write tests**.
- 4. Send pull request! :sunglasses:
- 
-## License:
- 
+
+1. Fork it
+1. `npm i`
+1. `npm run watch`
+1. Make changes and **write tests**.
+1. Send pull request! :sunglasses:
+
+## License
+
 MIT

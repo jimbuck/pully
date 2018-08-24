@@ -10,15 +10,11 @@
   "scripts": {
     "clean": "rimraf ./dist/**",
     "build": "tsc",
-    "test": "nyc --color --reporter=text --reporter=lcov -a ava -v",
+    "test": "npm run build && nyc --color --reporter=text --reporter=lcov -a ava -v",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
     "watch": "concurrently npm:watch:*",
     "watch:build": "tsc --watch",
     "watch:test": "ava --watch",
-    "bump:patch": "npm version patch -m 'Bump to %s.'",
-    "bump:minor": "npm version minor -m 'Bump to %s.'",
-    "bump:major": "npm version major -m 'Bump to %s.'",
-    "preversion": "npm test",
     "version": "git add -A",
     "postversion": "git push && git push --tags && npm publish"
   },

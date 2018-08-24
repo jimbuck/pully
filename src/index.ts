@@ -1,7 +1,3 @@
-import { parse, Url } from 'url';
-import { Readable } from 'stream';
-import { EventEmitter } from 'events';
-import { createWriteStream } from 'fs';
 import { resolve } from 'path';
 
 import * as debug from 'debug';
