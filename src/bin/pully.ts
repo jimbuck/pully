@@ -42,7 +42,7 @@ program
         return new Pully().download(options);
       }))
       .then((result: DownloadResults) => {
-        options.silent || logUpdate(`${chalk.magenta(result.format.info.title)} saved as
+        options.silent || logUpdate(`${chalk.magenta(result.format.data.videoTitle)} saved as
   ${chalk.green(result.path)} [${toHumanTime(result.duration / 1000)}]`);
         process.exit(0);
       }, err => {
@@ -137,17 +137,17 @@ function getDefaultOptions(options: any): DownloadOptions {
     template: '${author}/${title}',
     info: (format, cancel) => {
       let sizeLimit = fromHumanSize(options.limit);
-      let approxSize = fromHumanSize(toHumanSize(format.info.downloadSize));
+      let approxSize = fromHumanSize(toHumanSize(format.downloadSize));
       if (options.limit && approxSize > sizeLimit) {
-        return cancel(`Download cancelled: ${toHumanSize(format.info.downloadSize)} download exceeds the ${options.limit} limit!`);
+        return cancel(`Download cancelled: ${toHumanSize(format.downloadSize)} download exceeds the ${options.limit} limit!`);
       }
 
       progressBar = new ProgressBar<ProgressData>({
         width: 60,
         template: (el) => {
-          const title = chalk.magenta(format.info.title);
-          const author = chalk.magenta(format.info.author);
-          const downloadSize = chalk.cyan(toHumanSize(format.info.downloadSize));
+          const title = chalk.magenta(format.data.videoTitle);
+          const author = chalk.magenta(format.data.channelName);
+          const downloadSize = chalk.cyan(toHumanSize(format.downloadSize));
           const elapsed = chalk.yellow(el.elapsed);
           const percent = el.data.percent ? chalk.green((el.data.percent || 100).toFixed(1) + '%') : '';
           const eta = el.eta ? chalk.yellow(el.eta) : '';

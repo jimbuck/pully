@@ -1,1 +1,2 @@
 dist/**/*.spec.js
+.nyc_output/**

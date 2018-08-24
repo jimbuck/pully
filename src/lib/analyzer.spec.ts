@@ -1,24 +1,26 @@
-import { test } from 'ava';
+import { test, TestContext } from 'ava';
 
-import { Analyzer } from './analyzer';
+import { getBestFormats } from './analyzer';
 import { Presets, DefaultPresets } from './presets';
 
-for (let i = 0; i < DefaultPresets.length; i++) {
-    let preset = DefaultPresets[i];
-    test(`Analyzer#getRequiredFormats retrieves best formats for ${preset.name}`, async (t) => {
-        let a = new Analyzer();
-      
-        // TODO: Mock this call...
-        await a.getRequiredFormats('https://www.youtube.com/watch?v=oVXg7Grp1W8', preset).then(format => {
-            if (preset.videoSort) {
-                t.truthy(format.video);
-                t.true(format.video.resolution <= preset.maxResolution);
-            }
+test(`Analyzer#getRequiredFormats retrieves best formats for 4K`, forBestFormats, Presets.FourK);
+test(`Analyzer#getRequiredFormats retrieves best formats for 2K`, forBestFormats, Presets.TwoK);
+test(`Analyzer#getRequiredFormats retrieves best formats for Max`, forBestFormats, Presets.Max);
+test(`Analyzer#getRequiredFormats retrieves best formats for hfr`, forBestFormats, Presets.HFR);
+test(`Analyzer#getRequiredFormats retrieves best formats for HD`, forBestFormats, Presets.HD);
+test(`Analyzer#getRequiredFormats retrieves best formats for mp3`, forBestFormats, Presets.MP3);
 
-            if (preset.audioSort) {
-                t.truthy(format.audio);
-                t.true(format.audio.audioBitrate <= preset.maxAudioBitrate);
-            }
-        });
-    });
+async function forBestFormats(t: TestContext, presetName: string): Promise<void> {
+    const preset = DefaultPresets.find(p => p.name === presetName);
+    const format = await getBestFormats('https://www.youtube.com/watch?v=oVXg7Grp1W8', preset);
+
+    if (preset.videoSort) {
+        t.truthy(format.video);
+        t.true(format.video.resolution <= preset.maxResolution);
+    }
+
+    if (preset.audioSort) {
+        t.truthy(format.audio);
+        t.true(format.audio.audioBitrate <= preset.maxAudioBitrate);
+    }
 }

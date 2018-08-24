@@ -1,12 +1,13 @@
-import { resolve } from 'path';
+import { resolve as resolvePath } from 'path';
 
 import * as debug from 'debug';
 
 const template = require('lodash.template');
 
-import { Lookup, Preset, PullyConfig, DownloadConfig, DownloadResults, MediaInfo, FormatInfo, ProgressData } from './lib/models';
+import { Preset, PullyConfig, DownloadConfig, DownloadResults, FormatInfo, ProgressData, QueryResult } from './lib/models';
 import { Download } from './lib/download';
 import { Presets, DefaultPresets } from './lib/presets';
+import { query } from './lib/analyzer';
 
 const DEFAULT_TEMPLATE = '${title}__${author}';
 
@@ -25,11 +26,15 @@ export interface DownloadOptions {
 
 export class Pully {
 
-  private _presets: Lookup<Preset> = {};
+  private _presets: {[key: string]: Preset} = {};
 
   constructor(private _config?: PullyConfig) {
     this._config = this._config || {};
     this._registerPresets(DefaultPresets)._registerPresets(this._config.additionalPresets);
+  }
+  
+  public async query(url: string): Promise<QueryResult> {
+    return await query(url);
   }
   
   public async download(url: string, preset?: string): Promise<DownloadResults>;
@@ -52,7 +57,7 @@ export class Pully {
     const options: DownloadConfig = {
       url: input.url,
       preset: this._presets[input.preset || this._config.preset || Presets.HD],
-      dir: specifiedDir ? resolve(specifiedDir) : null,
+      dir: specifiedDir ? resolvePath(specifiedDir) : null,
       template: template(input.template || DEFAULT_TEMPLATE),
       info: input.info || this._config.verify || (() => { }),
       progress: input.progress
@@ -80,7 +85,7 @@ export class Pully {
     return Promise.resolve(input);
   }
 
-  private _registerPresets(presets: Array<Preset> | Lookup<Preset>): this {
+  private _registerPresets(presets: Array<Preset> | { [key: string]: Preset }): this {
     if (!presets) {
       return this;
     }

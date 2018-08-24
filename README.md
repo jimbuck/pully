@@ -23,7 +23,7 @@ While this tool makes it easy to download content from Youtube, I do not endorse
 **Note** that pully requires `ffmpeg` to be installed. [fluent-ffmpeg](https://www.npmjs.com/package/fluent-ffmpeg) has great instructions on how to set this up.
 
 ```bash
-npm install -g pully
+npm i -g pully
 ```
 
 ### Usage
@@ -56,7 +56,7 @@ Presets are used in the CLI version to simplify getting the video you want. Pres
 ### Installation
 
 ```bash
-npm i --save pully
+npm i pully
 ```
 
 ### Usage
@@ -66,16 +66,19 @@ import { Pully, Presets } from 'pully';
 
 const pully = new Pully();
 
+const video = await pully.query('<some-neato-video-url>');
+console.log(`${video.videoTitle} by ${video.channelName} has ${video.views} views!`);
+
 const options = {
   url: '<some-really-high-def-video-url>',
   preset: Presets.FourK,
   progress: (data) => console.log(data.percent + '%') // Progress reporter callback...
 };
 
-pully.download(options).then((
-  path => console.log('Downloaded to ' + path), // Path to the downloaded file
-  err => console.error(err) // Error info
-);
+const { path, format, duration } = await pully.download(options);
+console.log(path);     // Path to the downloaded file.
+console.log(format);   // Object containing all audio/video/meta data.
+console.log(duration); // Number of milliseconds the download took.
 ```
 
 ## Contribute

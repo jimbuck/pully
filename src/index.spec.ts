@@ -1,10 +1,8 @@
-import { unlinkSync } from 'fs';
+import { unlinkSync as deleteFileSync } from 'fs';
 
 import { test, ContextualTest } from 'ava';
 
-import { Pully, Presets, DownloadOptions, DownloadResults } from './index';
-
-const NOOP = () => { };
+import { Pully, Presets } from './index';
 
 const testVideo = process.env.PULLY_TEST_VIDEO || 'https://www.youtube.com/watch?v=oVXg7Grp1W8';
 
@@ -14,10 +12,10 @@ const testVideo = process.env.PULLY_TEST_VIDEO || 'https://www.youtube.com/watch
 const downloadedFiles = new Set<string>();
 
 test.after(`Download Cleanup`, t => {
-  downloadedFiles.forEach((value) => {
+  downloadedFiles.forEach((filePath) => {
     try {
-      unlinkSync(value);
-      //console.log(`("${value} deleted successfully.)"`)
+      deleteFileSync(filePath);
+      //console.log(`("${value} deleted successfully.)"`);
     } catch (err) {
       console.warn(err);
     }
@@ -42,15 +40,9 @@ test(`Pully#download requires a URL`, async (t) => {
 
   t.plan(3);
 
-  let p1 = p.download(null);
-  let p2 = p.download(null, 'hd');
-  let p3 = p.download({ url: null });
-
-  t.throws(p1);
-  t.throws(p2);
-  t.throws(p3);
-
-  await Promise.all([p1.catch(NOOP), p2.catch(NOOP), p3.catch(NOOP)]);
+  await t.throws(p.download(null));
+  await t.throws(p.download(null, 'hd'));
+  await t.throws(p.download({ url: null }));
 });
 
 testIf(!!testVideo, `Pully#download defaults to 'hd' preset`, async (t) => {

@@ -18,8 +18,6 @@
   "files.exclude": {
     "**/.git": true,
     "**/.svn": true,
-    "**/.DS_Store": true,
-    ".nyc_output": true,
-    "coverage": true
+    "**/.DS_Store": true
   }
 }

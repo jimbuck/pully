@@ -1,16 +1,16 @@
 import { createWriteStream } from 'fs';
 import { join, dirname } from 'path';
-import { Readable, Transform, PassThrough } from 'stream';
+import { Readable, Transform } from 'stream';
 
 const throttle = require('lodash.throttle');
 const ytdl = require('ytdl-core');
 const mkdirp = require('mkdirp-promise');
 const ffmpeg = require('fluent-ffmpeg');
-import { file, setGracefulCleanup } from 'tmp';
+import { file as createTempDir, setGracefulCleanup } from 'tmp';
 setGracefulCleanup();
 
 import { DownloadConfig, MediaFormat, DownloadResults, FormatInfo, ProgressData } from './models';
-import { Analyzer } from './analyzer';
+import { getBestFormats } from './analyzer';
 import { scrubObject } from '../utils/scrub';
 
 const TEMP_FILE_PREFIX = 'pully-';
@@ -34,8 +34,7 @@ export class Download {
   private _emitProgress: (indeterminate?: boolean) => void;
 
   constructor(
-    private _config: DownloadConfig,
-    private _analyzer: Analyzer = new Analyzer()
+    private _config: DownloadConfig
   ) {
 
     this._emitProgress = throttle((indeterminate?: boolean) => {
@@ -72,7 +71,7 @@ export class Download {
   }
 
   private _getFormats(): Promise<void> {
-    return this._analyzer.getRequiredFormats(this._config.url, this._config.preset)
+    return getBestFormats(this._config.url, this._config.preset)
       .then(format => {
         let cancelledReason: string;
         return Promise.resolve(this._config.info(format, (msg) => cancelledReason = msg)).then(() => {
@@ -103,7 +102,7 @@ export class Download {
       if (!format) {
         return resolve(null);
       }
-      resolve(ytdl.downloadFromInfo(this._format.info.raw, { format: format.raw }).pipe(this._createProgressTracker()));
+      resolve(ytdl.downloadFromInfo(this._format.data.raw, { format: format.raw }).pipe(this._createProgressTracker()));
     });
   }
 
@@ -136,7 +135,7 @@ export class Download {
 
   private _getOutputPath(): Promise<string> {
     if (this._config.dir) {
-      let safeInfo = scrubObject(this._format.info);
+      let safeInfo = scrubObject(this._format.data);
 
       let filename = this._config.template(safeInfo) + '.' + this._config.preset.outputFormat;
 
@@ -158,7 +157,7 @@ export class Download {
 
   private _getTempPath(suffix: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      file({ prefix: TEMP_FILE_PREFIX, postfix: suffix }, (err, path) => {
+      createTempDir({ prefix: TEMP_FILE_PREFIX, postfix: suffix }, (err, path) => {
         if (err) {
           return reject(err);
         }
@@ -171,10 +170,10 @@ export class Download {
   private _createFfmpegCommand(): any {
     return ffmpeg()
       .format(this._config.preset.outputFormat)
-      .outputOptions('-metadata', `title=${this._format.info.title}`)
-      .outputOptions('-metadata', `author=${this._format.info.author}`).outputOptions('-metadata', `artist=${this._format.info.author}`)
-      .outputOptions('-metadata', `description=${this._format.info.description}`).outputOptions('-metadata', `comment=${this._format.info.description}`)
-      .outputOptions('-metadata', `episode_id=${this._format.info.id}`)
+      .outputOptions('-metadata', `title=${this._format.data.videoTitle}`)
+      .outputOptions('-metadata', `author=${this._format.data.channelName}`).outputOptions('-metadata', `artist=${this._format.data.channelName}`)
+      .outputOptions('-metadata', `description=${this._format.data.description}`).outputOptions('-metadata', `comment=${this._format.data.description}`)
+      .outputOptions('-metadata', `episode_id=${this._format.data.videoId}`)
       .outputOptions('-metadata', `network=YouTube`);
   }
 
