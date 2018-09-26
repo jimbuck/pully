@@ -15,6 +15,7 @@
     "watch": "concurrently npm:watch:*",
     "watch:build": "tsc --watch",
     "watch:test": "ava --watch",
+    "preversion": "npm test",
     "version": "git add -A",
     "postversion": "git push && git push --tags && npm publish"
   },
