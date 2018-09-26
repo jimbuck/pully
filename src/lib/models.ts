@@ -79,7 +79,16 @@ export interface FormatInfo {
 export interface ProgressData {
   downloadedBytes?: number;
   totalBytes?: number;
+  /**
+   * Current ratio of downloaded bytes, ranges from 0 to 1.
+   */
   progress?: number;
+  /**
+   * Current percentage complete, ranges from 0 to 100 with two decimals of precision.
+   */
   percent?: number;
+  /**
+   * True if we do not know the total bytes (and as such the progress).
+   */
   indeterminate?: boolean;
 }
