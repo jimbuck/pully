@@ -29,7 +29,7 @@ npm i -g pully
 ### Usage
 
 ```bash
-pully download <url> [-p <preset>="hd"] [-d <outputDir>="."] [-t <filenameTemplate>="${author}/${title}"] [--silent]
+pully download <url> [-p <preset>="hd"] [-d <outputDir>="."] [-t <filenameTemplate>="${channelName}/${videoTitle}"] [--silent]
 
 pully set dir "~/Jim/videos/YouTube"
 
@@ -38,7 +38,7 @@ pully get dir # Prints ~/Jim/videos/YouTube
 pully dl <url> # Downloads specified video to ~/Jim/videos/YouTube/<author>/<title>.mp4
 ```
 
-Downloads a specified video based on a preset, defaulting to HD (see below). By default the file is named after the title and placed in a folder named after the author.
+Downloads a specified video based on a preset, defaulting to HD (see below). By default the file is named after the title and placed in a folder named after the channel.
 
 ## Presets
 

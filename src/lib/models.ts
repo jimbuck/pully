@@ -1,6 +1,6 @@
 import { VideoResult } from 'pully-core';
 
-export type TemplateFunction = ((result: QueryResult) => string);
+export type TemplateFunction = ((result: VideoResult) => string);
 export type FilenameTemplate = string | TemplateFunction;
 
 export interface PullyOptions {
@@ -37,7 +37,6 @@ export interface DownloadResults {
 
 export interface QueryResult extends VideoResult {
   formats: Array<MediaFormat>;
-
   raw: any;
 }
 
