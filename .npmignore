@@ -1,3 +1,4 @@
 dist/**/*.spec.js
 .nyc_output/**
 coverage/**
+temp

@@ -1,34 +1,24 @@
 import { resolve as resolvePath } from 'path';
 
 import * as debug from 'debug';
+const lodashTemplate: ((format: string) => ((data: any) => string)) = require('lodash.template');
 
-const template = require('lodash.template');
-
-import { Preset, PullyConfig, DownloadConfig, DownloadResults, FormatInfo, ProgressData, QueryResult } from './lib/models';
+import { Preset, PullyOptions, DownloadConfig, DownloadResults, ProgressData, QueryResult, FilenameTemplate, DownloadOptions, TemplateFunction } from './lib/models';
 import { Download } from './lib/download';
 import { Presets, DefaultPresets } from './lib/presets';
 import { query } from './lib/analyzer';
 
-const DEFAULT_TEMPLATE = '${title}__${author}';
+const DEFAULT_TEMPLATE = '${videoTitle}__${channelName}';
 
 const log = debug('pully:index');
 
-export { PullyConfig, Presets, ProgressData, DownloadResults };
-
-export interface DownloadOptions {
-  url?: string;
-  preset?: string;
-  dir?: string;
-  template?: string;
-  info?: (info: FormatInfo, cancel: (msg?: string) => void) => void;
-  progress?: (data: ProgressData) => void;
-}
+export { PullyOptions, DownloadOptions, Presets, ProgressData, DownloadResults };
 
 export class Pully {
 
   private _presets: {[key: string]: Preset} = {};
 
-  constructor(private _config?: PullyConfig) {
+  constructor(private _config?: PullyOptions) {
     this._config = this._config || {};
     this._registerPresets(DefaultPresets)._registerPresets(this._config.additionalPresets);
   }
@@ -58,7 +48,7 @@ export class Pully {
       url: input.url,
       preset: this._presets[input.preset || this._config.preset || Presets.HD],
       dir: specifiedDir ? resolvePath(specifiedDir) : null,
-      template: template(input.template || DEFAULT_TEMPLATE),
+      template: this._getTemplate(input.template),
       info: input.info || this._config.verify || (() => { }),
       progress: input.progress
     };
@@ -108,5 +98,13 @@ export class Pully {
     }
     
     return new Download(config).start();
+  }
+
+  private _getTemplate(localTemplate: FilenameTemplate): TemplateFunction {
+    for (let template of [localTemplate, this._config.template, DEFAULT_TEMPLATE]) {
+      if (!template) continue;
+      if (typeof template === 'function') return template;
+      return lodashTemplate(template);
+    }
   }
 }

@@ -3,7 +3,9 @@ import { unlinkSync as deleteFileSync } from 'fs';
 import { test, ContextualTest } from 'ava';
 
 import { Pully, Presets } from './index';
+import { join } from 'path';
 
+const tempPath = join(__dirname, '../temp');
 const testVideo = process.env.PULLY_TEST_VIDEO || 'https://www.youtube.com/watch?v=oVXg7Grp1W8';
 
 // 'https://www.youtube.com/watch?v=oVXg7Grp1W8'; // Short Video
@@ -15,7 +17,7 @@ test.after(`Download Cleanup`, t => {
   downloadedFiles.forEach((filePath) => {
     try {
       deleteFileSync(filePath);
-      //console.log(`("${value} deleted successfully.)"`);
+      console.log(`('${filePath}' deleted successfully.)`);
     } catch (err) {
       console.warn(err);
     }
@@ -54,6 +56,34 @@ testIf(!!testVideo, `Pully#download defaults to 'hd' preset`, async (t) => {
   t.is(typeof result.path, 'string');
   t.is(result.format.video.resolution, 1080);
   t.true(result.path.endsWith('.mp4'));
+});
+
+testIf(!!testVideo, `Pully#download accepts a template string`, async (t) => {
+  const p = new Pully();
+
+  const result = await p.download({
+    url: testVideo,
+    dir: tempPath,
+    template: '${videoId} - ${videoTitle}'
+  });
+  downloadedFiles.add(result.path);
+
+  t.is(typeof result.path, 'string');
+  t.true(result.path.endsWith(`${result.format.data.videoId} - ${result.format.data.videoTitle}.mp4`));
+});
+
+testIf(!!testVideo, `Pully#download accepts a template function`, async (t) => {
+  const p = new Pully();
+
+  const result = await p.download({
+    url: testVideo,
+    dir: tempPath,
+    template: result => `${result.channelName} - ${result.videoId}`
+  });
+  downloadedFiles.add(result.path);
+
+  t.is(typeof result.path, 'string');
+  t.true(result.path.endsWith(`${result.format.data.channelName} - ${result.format.data.videoId}.mp4`));
 });
 
 testIf(!!testVideo, `Pully#download accepts preset strings`, async (t) => {

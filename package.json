@@ -42,6 +42,7 @@
   "homepage": "https://github.com/JimmyBoh/pully#readme",
   "devDependencies": {
     "@types/debug": "^0.0.30",
+    "@types/lodash.template": "^4.4.4",
     "@types/node": "^10.9.1",
     "@types/through": "0.0.29",
     "@types/tmp": "0.0.33",

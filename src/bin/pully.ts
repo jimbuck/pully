@@ -8,7 +8,7 @@ const logUpdate = require('log-update');
 const Conf = require('conf');
 import * as debug from 'debug';
 
-import { Pully, DownloadOptions, ProgressData, DownloadResults } from '../';
+import { Pully, DownloadOptions, ProgressData, DownloadResults, Presets } from '../';
 import { toHumanTime, toHumanSize, fromHumanSize } from '../utils/human';
 import { ProgressBar } from '../utils/progress'; 
 
@@ -132,9 +132,9 @@ function mergeOptions(options: any): Promise<DownloadOptions> {
 
 function getDefaultOptions(options: any): DownloadOptions {
   return {
-    preset: 'hd',
+    preset: Presets.HD,
     dir: '.',
-    template: '${author}/${title}',
+    template: result => `${result.channelName}/${result.videoTitle}`,
     info: (format, cancel) => {
       let sizeLimit = fromHumanSize(options.limit);
       let approxSize = fromHumanSize(toHumanSize(format.downloadSize));
