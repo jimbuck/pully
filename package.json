@@ -42,33 +42,33 @@
   },
   "homepage": "https://github.com/JimmyBoh/pully#readme",
   "devDependencies": {
-    "@types/debug": "^0.0.30",
+    "@types/debug": "^0.0.31",
     "@types/lodash.template": "^4.4.4",
-    "@types/node": "^10.9.1",
+    "@types/node": "^10.12.3",
     "@types/through": "0.0.29",
     "@types/tmp": "0.0.33",
     "ava": "^0.25.0",
-    "concurrently": "^3.6.1",
+    "concurrently": "^4.0.1",
     "coveralls": "^3.0.2",
-    "nyc": "^12.0.2",
+    "nyc": "^13.1.0",
     "rimraf": "^2.6.2",
-    "typescript": "^3.0.1"
+    "typescript": "^3.1.6"
   },
   "dependencies": {
     "chalk": "^2.4.1",
-    "commander": "^2.17.1",
+    "commander": "^2.19.0",
     "conf": "^2.0.0",
-    "debug": "^3.1.0",
+    "debug": "^4.1.0",
     "fluent-ffmpeg": "^2.1.2",
     "lodash.template": "^4.4.0",
     "lodash.throttle": "^4.1.1",
     "log-update": "^2.3.0",
     "mkdirp-promise": "^5.0.1",
-    "pully-core": "^0.5.2",
+    "pully-core": "^0.6.0",
     "sanitize-filename": "^1.6.1",
     "tmp": "0.0.33",
     "update-notifier": "^2.5.0",
-    "ytdl-core": "^0.24.0"
+    "ytdl-core": "^0.28.0"
   },
   "ava": {
     "files": [

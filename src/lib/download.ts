@@ -11,7 +11,6 @@ setGracefulCleanup();
 
 import { DownloadConfig, MediaFormat, DownloadResults, FormatInfo, ProgressData } from './models';
 import { getBestFormats } from './analyzer';
-import { scrubObject } from '../utils/scrub';
 
 const TEMP_FILE_PREFIX = 'pully-';
 const TEMP_AUDIO_EXT = '.m4a';
@@ -135,9 +134,7 @@ export class Download {
 
   private _getOutputPath(): Promise<string> {
     if (this._config.dir) {
-      let safeInfo = scrubObject(this._format.data);
-
-      let filename = this._config.template(safeInfo) + '.' + this._config.preset.outputFormat;
+      let filename = this._config.template(this._format.data) + '.' + this._config.preset.outputFormat;
 
       return Promise.resolve(join(this._config.dir, filename));
     } else {

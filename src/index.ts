@@ -1,9 +1,9 @@
 import { resolve as resolvePath } from 'path';
 
 import * as debug from 'debug';
-const lodashTemplate: ((format: string) => ((data: any) => string)) = require('lodash.template');
+import { template, scrubObject, VideoResult } from 'pully-core';
 
-import { Preset, PullyOptions, DownloadConfig, DownloadResults, ProgressData, QueryResult, FilenameTemplate, DownloadOptions, TemplateFunction } from './lib/models';
+import { Preset, PullyOptions, DownloadConfig, DownloadResults, ProgressData, QueryResult, DownloadOptions } from './lib/models';
 import { Download } from './lib/download';
 import { Presets, DefaultPresets } from './lib/presets';
 import { query } from './lib/analyzer';
@@ -100,11 +100,15 @@ export class Pully {
     return new Download(config).start();
   }
 
-  private _getTemplate(localTemplate: FilenameTemplate): TemplateFunction {
-    for (let template of [localTemplate, this._config.template, DEFAULT_TEMPLATE]) {
-      if (!template) continue;
-      if (typeof template === 'function') return template;
-      return lodashTemplate(template);
+  private _getTemplate(localTemplate: string | ((result: any) => string)): (result: VideoResult) => string {
+    for (let format of [localTemplate, this._config.template, DEFAULT_TEMPLATE]) {
+      if (!format) continue;
+      if (typeof format === 'string') {
+        return template(format);
+      } else {
+        let formatFn = format;
+        return (data: VideoResult) => formatFn(scrubObject(data));
+      }
     }
   }
 }

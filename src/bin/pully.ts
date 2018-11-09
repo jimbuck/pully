@@ -134,7 +134,7 @@ function getDefaultOptions(options: any): DownloadOptions {
   return {
     preset: Presets.HD,
     dir: '.',
-    template: result => `${result.channelName}/${result.videoTitle}`,
+    template: '${channelName}/${videoTitle}',
     info: (format, cancel) => {
       let sizeLimit = fromHumanSize(options.limit);
       let approxSize = fromHumanSize(toHumanSize(format.downloadSize));

@@ -1,11 +1,8 @@
 import { VideoResult } from 'pully-core';
 
-export type TemplateFunction = ((result: VideoResult) => string);
-export type FilenameTemplate = string | TemplateFunction;
-
 export interface PullyOptions {
   preset?: string;
-  template?: FilenameTemplate;
+  template?: (result: VideoResult) => string;
   dir?: string;
   verify?: (info: FormatInfo) => boolean | Promise<boolean>;
   additionalPresets?: Array<Preset>;
@@ -15,7 +12,7 @@ export interface DownloadOptions {
   url?: string;
   preset?: string;
   dir?: string;
-  template?: FilenameTemplate;
+  template?: string | ((result: VideoResult) => string);
   info?: (info: FormatInfo, cancel: (msg?: string) => void) => void;
   progress?: (data: ProgressData) => void;
 }
@@ -24,7 +21,7 @@ export interface DownloadConfig {
   url: string;
   preset?: Preset;
   dir?: string;
-  template?: TemplateFunction;
+  template?: (result: VideoResult) => string;
   info?: (info: FormatInfo, cancel: (msg: string) => void) => void;
   progress?: (data: ProgressData) => void;
 }
