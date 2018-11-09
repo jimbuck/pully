@@ -5,7 +5,8 @@ import { Readable, Transform } from 'stream';
 const throttle = require('lodash.throttle');
 const ytdl = require('ytdl-core');
 const mkdirp = require('mkdirp-promise');
-const ffmpeg = require('fluent-ffmpeg');
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+import * as ffmpeg from 'fluent-ffmpeg';
 import { file as createTempDir, setGracefulCleanup } from 'tmp';
 setGracefulCleanup();
 
@@ -166,6 +167,7 @@ export class Download {
 
   private _createFfmpegCommand(): any {
     return ffmpeg()
+      .setFfmpegPath(ffmpegPath)
       .format(this._config.preset.outputFormat)
       .outputOptions('-metadata', `title=${this._format.data.videoTitle}`)
       .outputOptions('-metadata', `author=${this._format.data.channelName}`).outputOptions('-metadata', `artist=${this._format.data.channelName}`)

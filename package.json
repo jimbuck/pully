@@ -43,6 +43,7 @@
   "homepage": "https://github.com/JimmyBoh/pully#readme",
   "devDependencies": {
     "@types/debug": "^0.0.31",
+    "@types/fluent-ffmpeg": "^2.1.8",
     "@types/lodash.template": "^4.4.4",
     "@types/node": "^10.12.3",
     "@types/through": "0.0.29",
@@ -55,6 +56,7 @@
     "typescript": "^3.1.6"
   },
   "dependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.0.16",
     "chalk": "^2.4.1",
     "commander": "^2.19.0",
     "conf": "^2.0.0",

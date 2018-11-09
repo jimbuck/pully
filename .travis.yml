@@ -3,18 +3,18 @@ node_js:
   - "node"
   - "8"
   - "6"
-addons:
-  apt:
-    packages:
-    - wget
-    - tar
-    - bzip2
+#addons:
+#  apt:
+#    packages:
+#    - wget
+#    - tar
+#    - bzip2
 script:
-  - ./travis-setup.sh
+#  - ./travis-setup.sh
 before_install:
-  - sudo add-apt-repository ppa:sauce/ppa -y
-  - sudo apt-get update -q
-  - sudo apt-get install flvtool2 -y
+#  - sudo add-apt-repository ppa:sauce/ppa -y
+#  - sudo apt-get update -q
+#  - sudo apt-get install flvtool2 -y
 after_success: npm run coverage
 # deploy:
 #   provider: npm
