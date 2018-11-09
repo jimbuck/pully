@@ -1,4 +1,7 @@
 dist/**/*.spec.js
+dist/**/*.spec.d.ts
+src/**/*.spec.ts
 .nyc_output/**
 coverage/**
 temp
+.vscode
