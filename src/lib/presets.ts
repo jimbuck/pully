@@ -20,63 +20,93 @@ function audioBitrateSort(a: MediaFormat, b: MediaFormat): number {
   return (a.audioBitrate || 0) - (b.audioBitrate || 0);
 }
 
-function override(base: Preset, overrides: Preset): Preset {
+function extendPreset(base: Preset, overrides: Preset): Preset {
   return Object.assign({}, base, overrides);
+}
+
+export function prepPreset(preset: Preset): Preset {
+  if (!preset.maxResolution && !preset.maxAudioBitrate) {
+    throw new Error(`Custom presets must have at least a maxAudioBitrate or maxResolution`);
+  }
+
+  if (!preset.maxResolution) {
+    return extendPreset(baseAudioPreset, preset);
+  } else {
+    return extendPreset(baseVideoPreset, preset);
+  }
 }
 
 const baseVideoPreset: Preset = {
   name: null,
   outputFormat: 'mp4',
+  maxResolution: Number.MAX_SAFE_INTEGER,
+  maxFps: 60,
   videoFilters: [resolutionFilter, fpsFilter],
   videoSort: [resolutionSort, fpsSort],
   audioSort: [audioBitrateSort],
   maxAudioBitrate: 128
 };
 
-const maxPreset: Preset = override(baseVideoPreset, {
-  name: 'max',
-  maxResolution: Number.MAX_SAFE_INTEGER,
-  maxFps: Number.MAX_SAFE_INTEGER,
-  maxAudioBitrate: Number.MAX_SAFE_INTEGER
-});
-
-const fourKPreset = override(maxPreset, {
-  name: '4k',
-  maxResolution: 2160,
-  maxFps: 60
-});
-
-const twoKPreset = override(fourKPreset, {
-  name: '2k',
-  maxResolution: 1440
-});
-
-const hdPreset: Preset = override(twoKPreset, {
-  name: 'hd',
-  maxResolution: 1080
-});
-
-const hfrPreset = override(hdPreset, {
-  name: 'hfr',
-  maxFps: null,
-  videoSort: [fpsSort, resolutionSort]
-});
-
-const mp3Preset: Preset = {
-  name: 'mp3',
+const baseAudioPreset: Preset = {
+  name: null,
   outputFormat: 'mp3',
   audioFilters: [audioBitrateFilter],
   audioSort: [audioBitrateSort],
+  maxAudioBitrate: 128
+};
+
+const maxPreset: Preset = {
+  name: 'max',
+  maxFps: Number.MAX_SAFE_INTEGER,
+  maxResolution: Number.MAX_SAFE_INTEGER,
   maxAudioBitrate: Number.MAX_SAFE_INTEGER
 };
 
-export const DefaultPresets = [maxPreset, fourKPreset, twoKPreset, hdPreset, hfrPreset, mp3Preset];
+const fourKPreset: Preset = {
+  name: '4k',
+  maxResolution: 2160
+};
+
+const twoKPreset: Preset = {
+  name: '2k',
+  maxResolution: 1440
+};
+
+const hdPreset: Preset = {
+  name: 'hd',
+  maxResolution: 1080
+};
+
+const sdPreset: Preset = {
+  name: 'sd',
+  maxResolution: 720
+};
+
+const ldPreset: Preset = {
+  name: 'ld',
+  maxResolution: 480
+};
+
+const hfrPreset: Preset = {
+  name: 'hfr',
+  maxFps: Number.MAX_SAFE_INTEGER,
+  videoSort: [fpsSort, resolutionSort]
+};
+
+const mp3Preset: Preset = {
+  name: 'mp3',
+  maxAudioBitrate: Number.MAX_SAFE_INTEGER
+};
+
+export const DefaultPresets = [maxPreset, fourKPreset, twoKPreset, hdPreset, sdPreset, ldPreset, hfrPreset, mp3Preset];
 
 export const Presets = {
   Max: maxPreset.name,
   FourK: fourKPreset.name,
   TwoK: twoKPreset.name,
   HD: hdPreset.name,
+  SD: sdPreset.name,
+  LD: ldPreset.name,
   HFR: hfrPreset.name,
   MP3: mp3Preset.name
 };

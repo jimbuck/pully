@@ -75,19 +75,12 @@ export class Pully {
     return Promise.resolve(input);
   }
 
-  private _registerPresets(presets: Array<Preset> | { [key: string]: Preset }): this {
-    if (!presets) {
-      return this;
-    }
+  private _registerPresets(presets: Array<Preset>): this {
+    if (!presets) return this;
 
-    if (Array.isArray(presets)) {
-      log(`Registering ${presets.length} presets...`);
-      presets.forEach(preset => this._presets[preset.name] = preset);
-    } else {
-      log(`Registering ${Object.keys(presets).length} presets...`);
-      Object.assign(this._presets, presets);
-    }
-
+    log(`Registering ${presets.length} presets...`);
+    presets.forEach(preset => this._presets[preset.name] = preset);
+    
     return this;
   }
 

@@ -52,7 +52,7 @@ export class Download {
         };
 
       this._config.progress(data);
-    }, 150, { leading: true, trailing: true });
+    }, 500, { leading: true, trailing: true });
   }
 
   public start(): Promise<DownloadResults> {
@@ -97,22 +97,16 @@ export class Download {
       });
   }
 
-  private _downloadStream(format: MediaFormat): Promise<Readable> {
-    return new Promise((resolve, reject) => {
-      if (!format) {
-        return resolve(null);
-      }
-      resolve(ytdl.downloadFromInfo(this._format.data.raw, { format: format.raw }).pipe(this._createProgressTracker()));
-    });
+  private _downloadStream(format: MediaFormat): Readable {
+    return ytdl.downloadFromInfo(this._format.data.raw, { format: format.raw }).pipe(this._createProgressTracker());
   }
 
   private _downloadFile(format: MediaFormat, path: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      this._downloadStream(format).then(downloadStream => {
-        downloadStream.pipe(createWriteStream(path))
-          .on('finish', () => resolve(path))
-          .on('error', reject);
-      });
+      this._downloadStream(format)
+        .pipe(createWriteStream(path))
+        .on('finish', () => resolve(path))
+        .on('error', reject);
     });
   }
 

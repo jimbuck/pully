@@ -2,6 +2,7 @@ const ytdl = require('ytdl-core');
 
 import { MediaFormat, Preset, FormatInfo, QueryResult } from './models';
 import { createThumbnails } from 'pully-core';
+import { prepPreset } from './presets';
 
 const VIDEO_FORMAT = 'video/mp4';
 const AUDIO_FORMAT = 'audio/mp4';
@@ -56,6 +57,7 @@ export async function getBestFormats(url: string, preset: Preset): Promise<Forma
   let downloadSize = 0;
   let audio: MediaFormat;
   let video: MediaFormat;
+  preset = prepPreset(preset);
 
   const data = await query(url);
 
