@@ -1,4 +1,4 @@
-import { VideoResult } from 'pully-core';
+import { VideoResult, QueryResult, MediaFormat } from 'pully-core';
 
 export interface PullyOptions {
   preset?: string;
@@ -31,29 +31,6 @@ export interface DownloadResults {
   format: FormatInfo;
   duration: number;
 }
-
-export interface QueryResult extends VideoResult {
-  formats: Array<MediaFormat>;
-  raw: any;
-}
-
-export interface MediaFormat {
-  audioBitrate: number;
-  audioEncoding: string;
-  bitrate: string;
-  downloadSize: number;
-  container: string;
-  encoding: string;
-  fps: number;
-  itag: string;
-  resolution: number;
-  size: string;
-  type: string;
-  url: string;
-
-  raw: any;
-}
-
 export interface Preset {
   name: string;
   outputFormat?: string;
@@ -71,19 +48,60 @@ export interface FormatInfo {
   video?: MediaFormat;
   audio: MediaFormat;
   downloadSize: number;
+  path: string;
 }
 
 export interface ProgressData {
+  /**
+   * Current number of bytes that have been downloaded.
+   */
   downloadedBytes?: number;
+
+  /**
+   * The total bytes that must be downloaded.
+   */
   totalBytes?: number;
+
   /**
    * Current ratio of downloaded bytes, ranges from 0 to 1.
    */
   progress?: number;
+
   /**
    * Current percentage complete, ranges from 0 to 100 with two decimals of precision.
    */
   percent?: number;
+
+  /**
+   * The current estimated transfer rate, calculated with a rolling window.
+   */
+  bytesPerSecond?: number;
+
+  /**
+   * Human readable download speed with units (ranges from B/s up to GB/s).
+   */
+  downloadSpeed?: string;
+
+  /**
+   * Number of elapsed milliseconds.
+   */
+  elapsed?: number;
+
+  /**
+   * Display of time elapsed.
+   */
+  elapsedStr?: string;
+
+  /**
+   * Estimated milliseconds to completion.
+   */
+  eta?: number;
+
+  /**
+   * Display of estimated milliseconds to completion.
+   */
+  etaStr?: string;
+
   /**
    * True if we do not know the total bytes (and as such the progress).
    */

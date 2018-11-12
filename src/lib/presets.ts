@@ -1,4 +1,5 @@
-import { Preset, MediaFormat } from './models';
+import { MediaFormat } from 'pully-core';
+import { Preset } from './models';
 
 function fpsFilter (format: MediaFormat, options: Preset): boolean {
   return !options.maxFps || format.fps <= options.maxFps;
@@ -24,18 +25,6 @@ function extendPreset(base: Preset, overrides: Preset): Preset {
   return Object.assign({}, base, overrides);
 }
 
-export function prepPreset(preset: Preset): Preset {
-  if (!preset.maxResolution && !preset.maxAudioBitrate) {
-    throw new Error(`Custom presets must have at least a maxAudioBitrate or maxResolution`);
-  }
-
-  if (!preset.maxResolution) {
-    return extendPreset(baseAudioPreset, preset);
-  } else {
-    return extendPreset(baseVideoPreset, preset);
-  }
-}
-
 const baseVideoPreset: Preset = {
   name: null,
   outputFormat: 'mp4',
@@ -47,7 +36,7 @@ const baseVideoPreset: Preset = {
   maxAudioBitrate: 128
 };
 
-const baseAudioPreset: Preset = {
+export const baseAudioPreset: Preset = {
   name: null,
   outputFormat: 'mp3',
   audioFilters: [audioBitrateFilter],
@@ -55,7 +44,7 @@ const baseAudioPreset: Preset = {
   maxAudioBitrate: 128
 };
 
-const maxPreset: Preset = {
+export const maxPreset: Preset = {
   name: 'max',
   maxFps: Number.MAX_SAFE_INTEGER,
   maxResolution: Number.MAX_SAFE_INTEGER,
@@ -90,6 +79,7 @@ const ldPreset: Preset = {
 const hfrPreset: Preset = {
   name: 'hfr',
   maxFps: Number.MAX_SAFE_INTEGER,
+  maxResolution: Number.MAX_SAFE_INTEGER,
   videoSort: [fpsSort, resolutionSort]
 };
 
@@ -97,6 +87,20 @@ const mp3Preset: Preset = {
   name: 'mp3',
   maxAudioBitrate: Number.MAX_SAFE_INTEGER
 };
+
+export function prepPreset(preset: Preset): Preset {
+  if (!preset.maxResolution && !preset.maxAudioBitrate) {
+    throw new Error(`Custom presets must have at least a maxAudioBitrate or maxResolution`);
+  }
+
+  if (!preset.maxResolution) {
+    preset = extendPreset(baseAudioPreset, preset);
+  } else {
+    preset = extendPreset(baseVideoPreset, preset);
+  }
+
+  return preset;
+}
 
 export const DefaultPresets = [maxPreset, fourKPreset, twoKPreset, hdPreset, sdPreset, ldPreset, hfrPreset, mp3Preset];
 

@@ -1,6 +1,6 @@
 import { unlinkSync as deleteFileSync } from 'fs';
 
-import { test, ContextualTest } from 'ava';
+import { test } from 'ava';
 
 import { Pully, Presets } from './index';
 import { join } from 'path';
@@ -8,6 +8,7 @@ import { join } from 'path';
 const tempPath = join(__dirname, '../temp');
 const testVideo = process.env.PULLY_TEST_VIDEO || 'https://www.youtube.com/watch?v=oVXg7Grp1W8';
 
+// 'https://www.youtube.com/watch?v=OLxY0HDakRk'; // Other short video
 // 'https://www.youtube.com/watch?v=oVXg7Grp1W8'; // Short Video
 // 'https://www.youtube.com/watch?v=aqz-KE-bpKQ'; // Long Video
 
@@ -17,9 +18,9 @@ test.after(`Download Cleanup`, t => {
   downloadedFiles.forEach((filePath) => {
     try {
       deleteFileSync(filePath);
-      console.log(`('${filePath}' deleted successfully.)`);
+      t.log(`('${filePath}' deleted successfully.)`);
     } catch (err) {
-      console.warn(err);
+      t.log(err);
     }
   });
 });
@@ -49,7 +50,7 @@ test(`Pully#download requires a URL`, async (t) => {
   await t.throws(p.download({ url: null }));
 });
 
-testIf(!!testVideo, `Pully#download defaults to 'hd' preset`, async (t) => {
+test(`Pully#download defaults to 'hd' preset`, async (t) => {
   const p = new Pully();
 
   const result = await p.download(testVideo);
@@ -60,7 +61,7 @@ testIf(!!testVideo, `Pully#download defaults to 'hd' preset`, async (t) => {
   t.true(result.path.endsWith('.mp4'));
 });
 
-testIf(!!testVideo, `Pully#download accepts a template string`, async (t) => {
+test(`Pully#download accepts a template string`, async (t) => {
   const p = new Pully();
 
   const result = await p.download({
@@ -74,7 +75,7 @@ testIf(!!testVideo, `Pully#download accepts a template string`, async (t) => {
   t.true(result.path.endsWith(`${result.format.data.videoId} - ${result.format.data.videoTitle}.mp4`));
 });
 
-testIf(!!testVideo, `Pully#download accepts a template function`, async (t) => {
+test(`Pully#download accepts a template function`, async (t) => {
   const p = new Pully();
 
   const result = await p.download({
@@ -88,7 +89,7 @@ testIf(!!testVideo, `Pully#download accepts a template function`, async (t) => {
   t.true(result.path.endsWith(`${result.format.data.channelName} - ${result.format.data.videoId}.mp4`));
 });
 
-testIf(!!testVideo, `Pully#download accepts preset strings`, async (t) => {
+test(`Pully#download accepts preset strings`, async (t) => {
   const p = new Pully();
 
   const result = await p.download(testVideo, 'mp3');
@@ -99,7 +100,7 @@ testIf(!!testVideo, `Pully#download accepts preset strings`, async (t) => {
   t.true(result.path.endsWith('.mp3'));
 });
 
-testIf(!!testVideo, `Pully#download accepts options hash`, async (t) => {
+test(`Pully#download accepts options hash`, async (t) => {
   const p = new Pully();
 
   const result = await p.download({
@@ -112,11 +113,3 @@ testIf(!!testVideo, `Pully#download accepts options hash`, async (t) => {
   t.falsy(result.format.video);
   t.true(result.path.endsWith('.mp3'));
 });
-
-function testIf(condition: boolean, title: string, func: ContextualTest): void {
-  if(condition){
-    test(title, func);
-  } else {
-    test.skip(title, func);
-  }
-}

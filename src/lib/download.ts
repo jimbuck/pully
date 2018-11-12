@@ -3,15 +3,17 @@ import { join, dirname } from 'path';
 import { Readable, Transform } from 'stream';
 
 const throttle = require('lodash.throttle');
-const ytdl = require('ytdl-core');
 const mkdirp = require('mkdirp-promise');
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 import * as ffmpeg from 'fluent-ffmpeg';
 import { file as createTempDir, setGracefulCleanup } from 'tmp';
 setGracefulCleanup();
 
-import { DownloadConfig, MediaFormat, DownloadResults, FormatInfo, ProgressData } from './models';
+import { downloadFromInfo, MediaFormat } from 'pully-core';
+import { DownloadConfig, DownloadResults, FormatInfo, ProgressData } from './models';
 import { getBestFormats } from './analyzer';
+import { Speedometer } from '../utils/speedometer';
+import { toHumanTime } from '../utils/human';
 
 const TEMP_FILE_PREFIX = 'pully-';
 const TEMP_AUDIO_EXT = '.m4a';
@@ -28,34 +30,48 @@ export class Download {
 
   private _totalBytes: number = 0;
   private _downloadedBytes: number = 0;
+  private _start: number;
 
   private _format: FormatInfo;
 
   private _emitProgress: (indeterminate?: boolean) => void;
+  private _speedometer: Speedometer;
 
   constructor(
     private _config: DownloadConfig
   ) {
-
+    this._speedometer = new Speedometer();
     this._emitProgress = throttle((indeterminate?: boolean) => {
       if (!this._config.progress) {
         return;
       }
 
-      let data: ProgressData = indeterminate
-        ? { indeterminate }
-        : {
-          downloadedBytes: this._downloadedBytes,
-          totalBytes: this._totalBytes,
-          progress: this._progress,
-          percent: Math.floor(this._progress * 10000) / 100
-        };
+      if (indeterminate) {
+        this._config.progress({ indeterminate });
+        return;
+      }
+      let elapsed = Date.now() - this._start;
+      let eta = this._speedometer.eta(this._totalBytes);
 
-      this._config.progress(data);
+      this._speedometer.record(this._downloadedBytes);
+      this._config.progress({
+        indeterminate: false,
+        downloadedBytes: this._downloadedBytes,
+        totalBytes: this._totalBytes,
+        progress: this._progress,
+        percent: Math.floor(this._progress * 10000) / 100,
+        bytesPerSecond: this._speedometer.bytesPerSecond,
+        downloadSpeed: this._speedometer.currentSpeed,
+        elapsed,
+        elapsedStr: toHumanTime(elapsed/1000),
+        eta,
+        etaStr: toHumanTime(eta)
+      });
     }, 500, { leading: true, trailing: true });
   }
 
   public start(): Promise<DownloadResults> {
+    this._start = Date.now();
     return this._getFormats()
       .then(() => {
         this._totalBytes += (this._format.audio ? (this._format.audio.downloadSize || 0) : 0);
@@ -70,18 +86,18 @@ export class Download {
       });
   }
 
-  private _getFormats(): Promise<void> {
-    return getBestFormats(this._config.url, this._config.preset)
-      .then(format => {
-        let cancelledReason: string;
-        return Promise.resolve(this._config.info(format, (msg) => cancelledReason = msg)).then(() => {
-          if (cancelledReason) {
-            throw new Error(cancelledReason);
-          } else {
-            this._format = format;
-          }
-        });
-      });
+  private async _getFormats(): Promise<void> {
+    const format = await getBestFormats(this._config.url, this._config.preset);
+    let cancelledReason: string;
+
+    await Promise.resolve(this._config.info(format, (msg) => cancelledReason = msg));
+    
+    if (cancelledReason) {
+      throw new Error(cancelledReason);
+    } else {
+      this._format = format;
+      this._format.path = await this._getOutputPath();
+    }
   }
 
   private _downloadAudioThenStreamVideo(): Promise<string> {
@@ -89,16 +105,18 @@ export class Download {
       .then(path => this._downloadFile(this._format.audio, path))
       .then(audioPath => {
         return Promise.all([
-          this._downloadStream(this._format.video),
-          this._getOutputPath()
-        ]).then(([videoStream, outputPath]) => {
-          return this._processOutput(outputPath, audioPath, videoStream);
+          this._format.video ? this._downloadStream(this._format.video) : null,
+        ]).then(([videoStream]) => {
+          return this._processOutput(this._format.path, audioPath, videoStream);
         });
       });
   }
 
   private _downloadStream(format: MediaFormat): Readable {
-    return ytdl.downloadFromInfo(this._format.data.raw, { format: format.raw }).pipe(this._createProgressTracker());
+    if (!this._format.data || !format) {
+      throw new Error(`Missing required format!`);
+    }
+    return downloadFromInfo(this._format.data.raw, format.raw).pipe(this._createProgressTracker());
   }
 
   private _downloadFile(format: MediaFormat, path: string): Promise<string> {
@@ -127,13 +145,13 @@ export class Download {
     return this._ffmpegSave(ffmpegCommand, outputPath, secondary && typeof secondary === 'string');
   }
 
-  private _getOutputPath(): Promise<string> {
+  private async _getOutputPath(): Promise<string> {
     if (this._config.dir) {
       let filename = this._config.template(this._format.data) + '.' + this._config.preset.outputFormat;
 
-      return Promise.resolve(join(this._config.dir, filename));
+      return join(this._config.dir, filename);
     } else {
-      return this._getTempPath('.' + this._config.preset.outputFormat);
+      return await this._getTempPath('.' + this._config.preset.outputFormat);
     }
   }
 

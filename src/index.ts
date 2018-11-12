@@ -1,12 +1,11 @@
 import { resolve as resolvePath } from 'path';
 
 import * as debug from 'debug';
-import { template, scrubObject, VideoResult } from 'pully-core';
+import { template, query, scrubObject, VideoResult, QueryResult } from 'pully-core';
 
-import { Preset, PullyOptions, DownloadConfig, DownloadResults, ProgressData, QueryResult, DownloadOptions } from './lib/models';
+import { Preset, PullyOptions, DownloadConfig, DownloadResults, ProgressData, DownloadOptions } from './lib/models';
 import { Download } from './lib/download';
-import { Presets, DefaultPresets } from './lib/presets';
-import { query } from './lib/analyzer';
+import { Presets, DefaultPresets, prepPreset } from './lib/presets';
 
 const DEFAULT_TEMPLATE = '${videoTitle}__${channelName}';
 
@@ -79,7 +78,7 @@ export class Pully {
     if (!presets) return this;
 
     log(`Registering ${presets.length} presets...`);
-    presets.forEach(preset => this._presets[preset.name] = preset);
+    presets.forEach(preset => this._presets[preset.name] = prepPreset(preset));
     
     return this;
   }

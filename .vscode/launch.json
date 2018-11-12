@@ -23,13 +23,12 @@
       "request": "launch",
       "name": "Download Video",
       "program": "${workspaceRoot}/dist/bin/pully.js",
-      "cwd": "${workspaceRoot}",
+      "cwd": "${workspaceRoot}/temp",
       "args": [
-        "download", "https://www.youtube.com/watch?v=HQCZRm8QlPE"
+        "download", "https://www.youtube.com/watch?v=4KHCuXN2F3I"
       ],
       "outFiles": ["${workspaceRoot}/dist/**/*.js"],
       "sourceMaps": true,
-      "preLaunchTask": "build",
       "console": "externalTerminal",
       "env": {
         "debug": "*"
@@ -68,6 +67,21 @@
       "env": {
         "debug": "*"
       }
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run AVA Test",
+      "program": "${workspaceRoot}/node_modules/ava/profile.js",
+      "args": [
+        "--serial",
+        "${workspaceRoot}/dist/index.spec.js"
+      ],
+      "outFiles": ["${workspaceRoot}/dist/**/*.js"],
+      "sourceMaps": true,
+      "skipFiles": [
+        "<node_internals>/**/*.js"
+      ]
     },
     {
       "type": "node",

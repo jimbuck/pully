@@ -30,7 +30,6 @@ test(`ProgressBar#tick with progress updates the values`, t => {
   const progress = 0.65;
   const p = createProgressBar();
   t.is(p['_progress'], 0);
-  t.is(p['_remaining'], 1);
   p.tick(progress);
   t.is(p['_progress'], progress);
   p.tick(1);

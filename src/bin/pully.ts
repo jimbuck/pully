@@ -11,7 +11,9 @@ import * as debug from 'debug';
 import { Pully, DownloadOptions, ProgressData, DownloadResults, Presets } from '../';
 import { toHumanTime, toHumanSize, fromHumanSize } from '../utils/human';
 import { ProgressBar } from '../utils/progress'; 
+import { FormatInfo } from '../lib/models';
 
+const EMPTY_STRING = '';
 const log = debug('pully:cli');
 
 const pkg = require(join(__dirname, '../../package.json'));
@@ -148,12 +150,14 @@ function getDefaultOptions(options: any): DownloadOptions {
           const title = chalk.magenta(format.data.videoTitle);
           const author = chalk.magenta(format.data.channelName);
           const downloadSize = chalk.cyan(toHumanSize(format.downloadSize));
-          const elapsed = chalk.yellow(el.elapsed);
+          const elapsed = chalk.yellow(el.data.elapsedStr);
           const percent = el.data.percent ? chalk.green((el.data.percent || 100).toFixed(1) + '%') : '';
-          const eta = el.eta ? chalk.yellow(el.eta) : '';
-          const speed = el.speed ? ('(' + chalk.cyan(toHumanSize(el.speed * el.data.downloadedBytes) + '/s') + ')') : '';
+          const eta = el.data.etaStr ? chalk.yellow(el.data.etaStr) : '';
+          const speed = el.data.bytesPerSecond ? ('(' + chalk.cyan(toHumanSize(el.data.bytesPerSecond) + '/s') + ')') : '';
 
-          return `Downloading ${title} by ${author} (${downloadSize})
+          // TODO: Re-color and re-organize the output details...
+          return `Downloading ${title} by ${author} (${downloadSize} ${summarizeFormat(format)})
+  to ${format.path}
   ${elapsed} ${percent} ${el.bar} ${eta} ${speed}`;
          }
        });
@@ -177,4 +181,19 @@ function swapArgs(origArg: string, newArg: string): void {
   if (index > -1) {
     process.argv[index] = newArg;
   }
+}
+
+function summarizeFormat(format: FormatInfo): string {
+  let videoResolution = (format.video && (format.video.resolution || format.video.size));
+  let videoFps = (format.video && format.video.fps) || EMPTY_STRING;
+  let audioEncoding = (format.audio && format.audio.audioEncoding) || EMPTY_STRING;
+  let audioBitrate = (format.audio && format.audio.audioBitrate) || EMPTY_STRING;
+
+  let summary = `${audioBitrate}kbps ${audioEncoding}`;
+
+  if (videoResolution) {
+    summary = `${videoResolution}p${videoFps} with ${summary}`;
+  }
+
+  return summary;
 }

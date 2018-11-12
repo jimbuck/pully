@@ -1,63 +1,14 @@
-const ytdl = require('ytdl-core');
-
-import { MediaFormat, Preset, FormatInfo, QueryResult } from './models';
-import { createThumbnails } from 'pully-core';
-import { prepPreset } from './presets';
+import { Preset, FormatInfo } from './models';
+import { query, MediaFormat } from 'pully-core';
+import { format } from 'url';
 
 const VIDEO_FORMAT = 'video/mp4';
 const AUDIO_FORMAT = 'audio/mp4';
-
-export function query(url: string): Promise<QueryResult> {
-  return new Promise((resolve, reject) => {
-    let now = new Date();
-    ytdl.getInfo(url, { downloadUrl: true }, function (err: any, raw: any) {
-      if (err) {
-        return reject(err);
-      }
-
-      const data: QueryResult = {
-        raw,
-        videoId: raw.video_id,
-        videoTitle: raw.title,
-        videoUrl: raw.video_url,
-        channelId: raw.author.id,
-        channelName: raw.author.name,
-        channelUrl: raw.author.channel_url,
-        thumbnails: createThumbnails(raw.video_id),
-        description: raw.description,
-        published: new Date(raw.published),
-        views: parseInt(raw.view_count, 10),
-        lastScanned: now,
-        formats: (raw.formats as Array<any>).map<MediaFormat>(rawFormat => {
-
-          return {
-            raw: rawFormat,
-            audioBitrate: rawFormat.audioBitrate,
-            audioEncoding: rawFormat.audioEncoding,
-            bitrate: rawFormat.bitrate,
-            downloadSize: rawFormat.clen ? parseInt(rawFormat.clen, 10) : null,
-            container: rawFormat.container,
-            encoding: rawFormat.encoding,
-            fps: parseInt(rawFormat.fps || '0', 10),
-            itag: rawFormat.itag,
-            size: rawFormat.size,
-            resolution: parseInt(rawFormat.resolution || '0', 10) || (rawFormat.size && parseInt(rawFormat.size.split('x')[1], 10)) || 0,
-            type: rawFormat.type,
-            url: rawFormat.url
-          };
-        })
-      };
-
-      return resolve(data);
-    });
-  });
-}
 
 export async function getBestFormats(url: string, preset: Preset): Promise<FormatInfo> {
   let downloadSize = 0;
   let audio: MediaFormat;
   let video: MediaFormat;
-  preset = prepPreset(preset);
 
   const data = await query(url);
 
@@ -82,7 +33,7 @@ export async function getBestFormats(url: string, preset: Preset): Promise<Forma
     }
   }
 
-  return Promise.resolve({ data, audio, video, downloadSize });
+  return Promise.resolve({ data, audio, video, downloadSize, path: null });
 }
 
 function _createVideoFilter(preset: Preset) {
