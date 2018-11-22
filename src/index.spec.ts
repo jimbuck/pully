@@ -85,8 +85,11 @@ test(`Pully#download accepts a template function`, async (t) => {
   });
   downloadedFiles.add(result.path);
 
-  t.is(typeof result.path, 'string');
-  t.true(result.path.endsWith(`${result.format.data.channelName} - ${result.format.data.videoId}.mp4`));
+  const expectedPathSuffix = `${result.format.data.channelName} - ${result.format.data.videoId}.mp4`;
+  const actualPath = result.path;
+
+  t.is(typeof actualPath, 'string');
+  t.true(actualPath.endsWith(expectedPathSuffix));
 });
 
 test(`Pully#download accepts preset strings`, async (t) => {

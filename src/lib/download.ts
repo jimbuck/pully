@@ -1,6 +1,7 @@
 import { createWriteStream } from 'fs';
 import { join, dirname } from 'path';
 import { Readable, Transform } from 'stream';
+import { EventEmitter } from 'events';
 
 const throttle = require('lodash.throttle');
 const mkdirp = require('mkdirp-promise');
@@ -10,7 +11,7 @@ import { file as createTempDir, setGracefulCleanup } from 'tmp';
 setGracefulCleanup();
 
 import { downloadFromInfo, MediaFormat } from 'pully-core';
-import { DownloadConfig, DownloadResults, FormatInfo, ProgressData } from './models';
+import { DownloadResults, FormatInfo, ProgressData, InternalDownloadConfig } from './models';
 import { getBestFormats } from './analyzer';
 import { Speedometer } from '../utils/speedometer';
 import { toHumanTime } from '../utils/human';
@@ -38,23 +39,21 @@ export class Download {
   private _speedometer: Speedometer;
 
   constructor(
-    private _config: DownloadConfig
+    private _config: InternalDownloadConfig,
+    private _emitter: EventEmitter
   ) {
     this._speedometer = new Speedometer();
     this._emitProgress = throttle((indeterminate?: boolean) => {
-      if (!this._config.progress) {
-        return;
-      }
-
+      
       if (indeterminate) {
         this._config.progress({ indeterminate });
         return;
       }
-      let elapsed = Date.now() - this._start;
-      let eta = this._speedometer.eta(this._totalBytes);
-
+      const elapsed = Date.now() - this._start;
       this._speedometer.record(this._downloadedBytes);
-      this._config.progress({
+      const eta = this._speedometer.eta(this._totalBytes);
+
+      const progress: ProgressData = {
         indeterminate: false,
         downloadedBytes: this._downloadedBytes,
         totalBytes: this._totalBytes,
@@ -63,40 +62,46 @@ export class Download {
         bytesPerSecond: this._speedometer.bytesPerSecond,
         downloadSpeed: this._speedometer.currentSpeed,
         elapsed,
-        elapsedStr: toHumanTime(elapsed/1000),
+        elapsedStr: toHumanTime(elapsed / 1000),
         eta,
         etaStr: toHumanTime(eta)
-      });
+      };
+
+      this._emitter.emit('progress', { progress, config: this._config });
+      this._config.progress && this._config.progress(progress);
     }, 500, { leading: true, trailing: true });
   }
 
-  public start(): Promise<DownloadResults> {
+  public async start(): Promise<DownloadResults> {
     this._start = Date.now();
-    return this._getFormats()
-      .then(() => {
-        this._totalBytes += (this._format.audio ? (this._format.audio.downloadSize || 0) : 0);
-        this._totalBytes += (this._format.video ? (this._format.video.downloadSize || 0) : 0);
+    let cancellationReason = await this._getFormats();
 
-        this._emitProgress(); // Emit zero progress...
+    if (cancellationReason) {
+      return { path: null, format: this._format, duration: (Date.now() - this._start), cancelled: true, reason: cancellationReason };
+    }
 
-        return this._downloadAudioThenStreamVideo()
-      })
-      .then(path => {
-        return { path, format: this._format, duration: null };
-      });
+    this._totalBytes += (this._format.audio ? (this._format.audio.downloadSize || 0) : 0);
+    this._totalBytes += (this._format.video ? (this._format.video.downloadSize || 0) : 0);
+
+    this._emitProgress(); // Emit zero progress...
+
+    const path = await this._downloadAudioThenStreamVideo();
+
+    return { path, format: this._format, duration: (Date.now() - this._start), cancelled: false };
   }
 
-  private async _getFormats(): Promise<void> {
-    const format = await getBestFormats(this._config.url, this._config.preset);
+  private async _getFormats(): Promise<string> {
+    this._format = await getBestFormats(this._config.url, this._config.preset);
+    this._format.path = await this._getOutputPath();
+    
     let cancelledReason: string;
 
-    await Promise.resolve(this._config.info(format, (msg) => cancelledReason = msg));
+    await Promise.resolve(this._config.info(this._format, (msg) => cancelledReason = msg));
     
     if (cancelledReason) {
-      throw new Error(cancelledReason);
+      return `Download Cancelled: "${cancelledReason}".`;
     } else {
-      this._format = format;
-      this._format.path = await this._getOutputPath();
+      return null;
     }
   }
 

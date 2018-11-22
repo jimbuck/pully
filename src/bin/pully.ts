@@ -8,7 +8,7 @@ const logUpdate = require('log-update');
 const Conf = require('conf');
 import * as debug from 'debug';
 
-import { Pully, DownloadOptions, ProgressData, DownloadResults, Presets } from '../';
+import { Pully, DownloadConfig, ProgressData, DownloadResults, Presets } from '../';
 import { toHumanTime, toHumanSize, fromHumanSize } from '../utils/human';
 import { ProgressBar } from '../utils/progress'; 
 import { FormatInfo } from '../lib/models';
@@ -21,6 +21,11 @@ updateNotifier({ pkg }).notify();
 
 const config = new Conf();
 let progressBar: ProgressBar<ProgressData>;
+
+interface BinDownloadConfig extends DownloadConfig {
+  silent?: boolean;
+  limit?: string;
+}
 
 // Log any unhandled exceptions...
 process.on('uncaughtException', err => log(`uncaughtException: ${err}`, err));
@@ -37,7 +42,7 @@ program
   .option('-t, --template <template>', 'The format of the the filename, recursively creating missing subfolders.')
   .option('-l, --limit <size>', 'The maximum filesize to download.')
   .option('-s, --silent', 'Hides all output.')
-  .action(function (url: string, options: any) {
+  .action(function (url: string, options: BinDownloadConfig) {
     options.url = url;
     return mergeOptions(options)
       .then((options => {
@@ -123,7 +128,7 @@ function configStoreDelete(key: string): void {
   config.delete(`config.${key}`);
 }
 
-function mergeOptions(options: any): Promise<DownloadOptions> {
+function mergeOptions(options: BinDownloadConfig): Promise<BinDownloadConfig> {
   
   const defaultOptions = getDefaultOptions(options);
   const globalOptions = configStore();
@@ -132,7 +137,7 @@ function mergeOptions(options: any): Promise<DownloadOptions> {
 }
 
 
-function getDefaultOptions(options: any): DownloadOptions {
+function getDefaultOptions(options: BinDownloadConfig): BinDownloadConfig {
   return {
     preset: Presets.HD,
     dir: '.',
@@ -141,7 +146,7 @@ function getDefaultOptions(options: any): DownloadOptions {
       let sizeLimit = fromHumanSize(options.limit);
       let approxSize = fromHumanSize(toHumanSize(format.downloadSize));
       if (options.limit && approxSize > sizeLimit) {
-        return cancel(`Download cancelled: ${toHumanSize(format.downloadSize)} download exceeds the ${options.limit} limit!`);
+        return cancel(`${toHumanSize(format.downloadSize)} download exceeds the ${options.limit} limit!`);
       }
 
       progressBar = new ProgressBar<ProgressData>({
@@ -173,7 +178,7 @@ function getDefaultOptions(options: any): DownloadOptions {
         progressBar.tick(data.progress, data);
       }
     }
-  } as DownloadOptions;
+  } as DownloadConfig;
 }
 
 function swapArgs(origArg: string, newArg: string): void {

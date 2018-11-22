@@ -1,9 +1,10 @@
 import { resolve as resolvePath } from 'path';
+import { EventEmitter } from 'events';
 
 import * as debug from 'debug';
 import { template, query, scrubObject, VideoResult, QueryResult } from 'pully-core';
 
-import { Preset, PullyOptions, DownloadConfig, DownloadResults, ProgressData, DownloadOptions } from './lib/models';
+import { Preset, PullyOptions, DownloadConfig, DownloadResults, ProgressData, InternalDownloadConfig } from './lib/models';
 import { Download } from './lib/download';
 import { Presets, DefaultPresets, prepPreset } from './lib/presets';
 
@@ -11,25 +12,37 @@ const DEFAULT_TEMPLATE = '${videoTitle}__${channelName}';
 
 const log = debug('pully:index');
 
-export { PullyOptions, DownloadOptions, Presets, ProgressData, DownloadResults };
+export { PullyOptions, DownloadConfig, Presets, ProgressData, DownloadResults };
 
-export class Pully {
+export declare interface Pully {
+  on(event: 'query', listener: (args: QueryResult) => void): this;
+  on(event: 'downloadstarted', listener: (args: DownloadConfig) => void): this;
+  on(event: 'downloadcomplete', listener: (args: DownloadResults) => void): this;
+  on(event: 'downloadcancelled', listener: (args: DownloadResults) => void): this;
+  on(event: 'downloadfailed', listener: (args: { err: any, options: DownloadConfig }) => void): this;
+  on(event: 'progress', listener: (args: { progress: ProgressData, options: DownloadConfig }) => void): this;
+}
+
+export class Pully extends EventEmitter {
 
   private _presets: {[key: string]: Preset} = {};
 
   constructor(private _config?: PullyOptions) {
+    super();
     this._config = this._config || {};
     this._registerPresets(DefaultPresets)._registerPresets(this._config.additionalPresets);
   }
   
   public async query(url: string): Promise<QueryResult> {
-    return await query(url);
+    let results = await query(url);
+    this.emit('query', results);
+    return results;
   }
   
   public async download(url: string, preset?: string): Promise<DownloadResults>;
-  public async download(options: DownloadOptions): Promise<DownloadResults>;
-  public async download(input: string | DownloadOptions, preset?: string): Promise<DownloadResults> {
-    let start = Date.now();
+  public async download(options: DownloadConfig): Promise<DownloadResults>;
+  public async download(input: string | DownloadConfig, preset?: string): Promise<DownloadResults> {
+    const globalStart = Date.now();
     if (typeof input === 'string') {
       input = {
         url: input,
@@ -37,30 +50,29 @@ export class Pully {
       };
     }
 
-    log(`Download initated...`);
+    let options = await this._formatConfig(input);
 
-    input = await this._validateOptions(input);
+    log(`Download started...`);
+    this.emit('downloadstarted', options);
 
-    let specifiedDir = input.dir || this._config.dir;
+    let dlPromise = new Download(options, this).start();
 
-    const options: DownloadConfig = {
-      url: input.url,
-      preset: this._presets[input.preset || this._config.preset || Presets.HD],
-      dir: specifiedDir ? resolvePath(specifiedDir) : null,
-      template: this._getTemplate(input.template),
-      info: input.info || this._config.verify || (() => { }),
-      progress: input.progress
-    };
-
-    const results = await this._beginDownload(options);
-
-    results.duration = (Date.now() - start);
-
-    log(`Download complete... %o`, results);
-    return results;
+    dlPromise.then(
+      results => {
+        results.duration = Date.now() - globalStart;
+        if (results.cancelled) {
+          log(`Download cancelled... %o`, results);
+          this.emit('downloadcancelled', results);
+        } else {
+          log(`Download complete... %o`, results);
+          this.emit('downloadcomplete', results);
+        }
+      }, err => this.emit('downloadfailed', { options, err }));
+    
+    return dlPromise;
   }
 
-  private _validateOptions(input: DownloadOptions): Promise<DownloadOptions> {
+  private _formatConfig(input: DownloadConfig): Promise<InternalDownloadConfig> {
     if (!input) {
       log(`No options detected!`);
       return Promise.reject(new Error(`No options detected!`));
@@ -71,7 +83,33 @@ export class Pully {
       return Promise.reject(new Error(`"${input.url}" is not a valid URL!`));
     }
 
-    return Promise.resolve(input);
+    let output: InternalDownloadConfig = {
+      url: input.url,
+      info: input.info || this._config.info || (() => { }),
+      template: this._getTemplate(input.template),
+      progress: input.progress
+    } as any;
+
+    // Resolve the directory...
+    let specifiedDir = input.dir || this._config.dir;
+    output.dir = specifiedDir ? resolvePath(specifiedDir) : null;
+
+    // Resolve the preset...
+    let specifiedPresetName = input.preset || this._config.preset || Presets.HD;
+    if(typeof specifiedPresetName !== 'string') {
+      output.preset = specifiedPresetName;
+    } else {
+      let specifiedPreset = this._presets[specifiedPresetName];
+      if (!specifiedPreset) {
+        log(`No preset "${specifiedPresetName}"!`);
+        let err = new Error(`No preset "${specifiedPresetName}"!`);
+        this.emit('downloadfailed', { options: input, err });
+        throw err;
+      }
+      output.preset = specifiedPreset;
+    }
+
+    return Promise.resolve(output);
   }
 
   private _registerPresets(presets: Array<Preset>): this {
@@ -81,15 +119,6 @@ export class Pully {
     presets.forEach(preset => this._presets[preset.name] = prepPreset(preset));
     
     return this;
-  }
-
-  private _beginDownload(config: DownloadConfig): Promise<DownloadResults> {
-    if (!config.preset) {
-      log(`No preset "${config.preset}"!`);
-      throw new Error(`No preset "${config.preset}"!`);
-    }
-    
-    return new Download(config).start();
   }
 
   private _getTemplate(localTemplate: string | ((result: any) => string)): (result: VideoResult) => string {

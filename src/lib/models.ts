@@ -1,28 +1,46 @@
 import { VideoResult, QueryResult, MediaFormat } from 'pully-core';
 
 export interface PullyOptions {
+  /**
+   * The default preset to use when downloading a video.
+   */
   preset?: string;
-  template?: (result: VideoResult) => string;
-  dir?: string;
-  verify?: (info: FormatInfo) => boolean | Promise<boolean>;
-  additionalPresets?: Array<Preset>;
-}
-
-export interface DownloadOptions {
-  url?: string;
-  preset?: string;
-  dir?: string;
+  /**
+   * The default file folder/name to use when downloading a video.
+   */
   template?: string | ((result: VideoResult) => string);
-  info?: (info: FormatInfo, cancel: (msg?: string) => void) => void;
-  progress?: (data: ProgressData) => void;
+
+  /**
+   * The default base directory to download into.
+   */
+  dir?: string;
+
+  /**
+   * A default function that allows pre-inspection of download data with the ability to cancel the download.
+   */
+  info?: (info: FormatInfo, cancel: (msg?: string) => void) => void | Promise<any>;
+
+  /**
+   * Extra presets
+   */
+  additionalPresets?: Array<Preset>;
 }
 
 export interface DownloadConfig {
   url: string;
-  preset?: Preset;
+  preset?: string | Preset;
   dir?: string;
-  template?: (result: VideoResult) => string;
-  info?: (info: FormatInfo, cancel: (msg: string) => void) => void;
+  template?: string | ((result: VideoResult) => string);
+  info?: (info: FormatInfo, cancel: (msg?: string) => void) => void | Promise<any>;
+  progress?: (data: ProgressData) => void;
+}
+
+export interface InternalDownloadConfig {
+  url: string;
+  preset: Preset;
+  dir: string;
+  template: ((result: VideoResult) => string);
+  info: (info: FormatInfo, cancel: (msg?: string) => void) => void | Promise<any>;
   progress?: (data: ProgressData) => void;
 }
 
@@ -30,6 +48,8 @@ export interface DownloadResults {
   path?: string;
   format: FormatInfo;
   duration: number;
+  cancelled: boolean;
+  reason?: string;
 }
 export interface Preset {
   name: string;
