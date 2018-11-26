@@ -200,8 +200,11 @@ export class Download {
       return new Promise((resolve, reject) => {
         ffmpegCommand
           .on('progress', (data: any) => this._emitProgress(indeterminate))
-          .on('error', reject)
-          .on('end', () => resolve(path))
+          .on('error', (err: Error, stdout: string, stderr: string) => {
+            console.error(JSON.stringify({ err, stdout, stderr }, null, '  '));
+            reject(err.message);
+          })
+          .on('end', (stdout: string, stderr: string) => resolve(path))
           .save(path);
       });
     });
