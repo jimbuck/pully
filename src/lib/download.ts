@@ -3,12 +3,15 @@ import { join, dirname } from 'path';
 import { Readable, Transform } from 'stream';
 import { EventEmitter } from 'events';
 
+import * as debug from 'debug';
 const throttle = require('lodash.throttle');
 const mkdirp = require('mkdirp-promise');
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 import * as ffmpeg from 'fluent-ffmpeg';
 import { file as createTempDir, setGracefulCleanup } from 'tmp';
 setGracefulCleanup();
+
+const log = debug('pully:download');
 
 import { downloadFromInfo, MediaFormat } from 'pully-core';
 import { DownloadResults, FormatInfo, ProgressData, InternalDownloadConfig } from './models';
@@ -44,7 +47,7 @@ export class Download {
   ) {
     this._speedometer = new Speedometer();
     this._emitProgress = throttle((indeterminate?: boolean) => {
-      
+
       if (indeterminate) {
         this._config.progress({ indeterminate });
         return;
@@ -67,6 +70,7 @@ export class Download {
         etaStr: toHumanTime(eta)
       };
 
+      log(`${progress.percent}% downloaded (${progress.downloadedBytes}/${progress.totalBytes}) [${progress.elapsedStr} -> ${progress.etaStr}]...`);
       this._emitter.emit('progress', { progress, config: this._config });
       this._config.progress && this._config.progress(progress);
     }, 500, { leading: true, trailing: true });
@@ -99,7 +103,9 @@ export class Download {
     await Promise.resolve(this._config.info(this._format, (msg) => cancelledReason = msg));
     
     if (cancelledReason) {
-      return `Download Cancelled: "${cancelledReason}".`;
+      let cancelStr = `Download Cancelled: "${cancelledReason}".`;
+      log(cancelStr);
+      return cancelStr;
     } else {
       return null;
     }

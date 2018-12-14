@@ -118,7 +118,7 @@ export interface ProgressData {
   eta?: number;
 
   /**
-   * Display of estimated milliseconds to completion.
+   * Display of estimated time to completion.
    */
   etaStr?: string;
 
