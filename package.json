@@ -1,6 +1,6 @@
 {
   "name": "pully",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "description": "A simple CLI for downloading high quality YouTube videos!",
   "main": "index.js",
   "types": "./dist/index.d.ts",
