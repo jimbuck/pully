@@ -8,19 +8,20 @@ const throttle = require('lodash.throttle');
 const mkdirp = require('mkdirp-promise');
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 import * as ffmpeg from 'fluent-ffmpeg';
-import { file as createTempDir, setGracefulCleanup } from 'tmp';
+import { file as createTempPath, setGracefulCleanup } from 'tmp';
 setGracefulCleanup();
 
 const log = debug('pully:download');
 
 import { downloadFromInfo, MediaFormat } from 'pully-core';
-import { DownloadResults, FormatInfo, ProgressData, InternalDownloadConfig } from './models';
+import { DownloadResults, FormatInfo, ProgressData, InternalDownloadConfig, DownloadMode } from './models';
 import { getBestFormats } from './analyzer';
 import { Speedometer } from '../utils/speedometer';
 import { toHumanTime } from '../utils/human';
 
 const TEMP_FILE_PREFIX = 'pully-';
 const TEMP_AUDIO_EXT = '.m4a';
+const TEMP_VIDEO_EXT = '.mp4';
 
 export class Download {
  
@@ -49,7 +50,7 @@ export class Download {
     this._emitProgress = throttle((indeterminate?: boolean) => {
 
       if (indeterminate) {
-        this._config.progress({ indeterminate });
+        this._config.progress && this._config.progress({ indeterminate });
         return;
       }
       const elapsed = Date.now() - this._start;
@@ -89,7 +90,7 @@ export class Download {
 
     this._emitProgress(); // Emit zero progress...
 
-    const path = await this._downloadAudioThenStreamVideo();
+    const path = await this._beginDownload();
 
     return { path, format: this._format, duration: (Date.now() - this._start), cancelled: false };
   }
@@ -111,19 +112,63 @@ export class Download {
     }
   }
 
-  private _downloadAudioThenStreamVideo(): Promise<string> {
-    return this._getTempPath(TEMP_AUDIO_EXT)
-      .then(path => this._downloadFile(this._format.audio, path))
-      .then(audioPath => {
-        return Promise.all([
-          this._format.video ? this._downloadStream(this._format.video) : null,
-        ]).then(([videoStream]) => {
-          return this._processOutput(this._format.path, audioPath, videoStream);
-        });
-      });
+  private async _beginDownload(): Promise<string> {
+    switch (this._config.mode) {
+      case DownloadMode.Merge:
+        return this._downloadAudioAndMergeVideo();
+      case DownloadMode.Sequential:
+        return this._downloadAudioThenVideoThenMerge();
+      case DownloadMode.Parallel:
+        return this._downloadAudioAndVideoThenMerge();
+      case DownloadMode.Parts:
+        return this._downloadPartsThenMerge();
+    }
   }
 
-  private _downloadStream(format: MediaFormat): Readable {
+  private async _downloadAudioAndMergeVideo(): Promise<string> {
+    let audioPath = await this._getTempPath(TEMP_AUDIO_EXT);
+    audioPath = await this._downloadFile(this._format.audio, audioPath);
+
+    let videoStream: Readable = null;
+    if (this._format.video) videoStream = this._getDownloadStream(this._format.video);
+
+    return this._processOutput(this._format.path, audioPath, videoStream);
+  }
+
+  private async _downloadAudioThenVideoThenMerge(): Promise<string> {
+    let audioPath = await this._getTempPath(TEMP_AUDIO_EXT);
+    await this._downloadFile(this._format.audio, audioPath);
+
+    let videoPath: string = null;
+    if (this._format.video) {
+      videoPath = await this._getTempPath(TEMP_VIDEO_EXT);
+      await this._downloadFile(this._format.video, videoPath);
+    }
+
+    return this._processOutput(this._format.path, audioPath, videoPath);
+  }
+
+  private async _downloadAudioAndVideoThenMerge(): Promise<string> {
+    let audioPath = await this._getTempPath(TEMP_AUDIO_EXT);
+    let audioPromise = this._downloadFile(this._format.audio, audioPath);
+
+    let videoPath: string = null;
+    let videoPromise: Promise<string> = Promise.resolve(null);
+    if (this._format.video) {
+      videoPath = await this._getTempPath(TEMP_VIDEO_EXT);
+      videoPromise = this._downloadFile(this._format.video, videoPath);
+    }
+
+    await Promise.all([audioPromise, videoPromise]);
+
+    return this._processOutput(this._format.path, audioPath, videoPath);
+  }
+
+  private async _downloadPartsThenMerge(): Promise<string> {
+    throw new Error('Not yet implemented!');
+  }
+
+  private _getDownloadStream(format: MediaFormat): Readable {
     if (!this._format.data || !format) {
       throw new Error(`Missing required format!`);
     }
@@ -132,7 +177,7 @@ export class Download {
 
   private _downloadFile(format: MediaFormat, path: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      this._downloadStream(format)
+      this._getDownloadStream(format)
         .pipe(createWriteStream(path))
         .on('finish', () => resolve(path))
         .on('error', reject);
@@ -178,7 +223,7 @@ export class Download {
 
   private _getTempPath(suffix: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      createTempDir({ prefix: TEMP_FILE_PREFIX, postfix: suffix }, (err, path) => {
+      createTempPath({ prefix: TEMP_FILE_PREFIX, postfix: suffix }, (err, path) => {
         if (err) {
           return reject(err);
         }

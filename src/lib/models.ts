@@ -1,5 +1,12 @@
 import { VideoResult, QueryResult, MediaFormat } from 'pully-core';
 
+export enum DownloadMode {
+  Merge = 'merge',
+  Sequential = 'sequential',
+  Parallel = 'parallel',
+  Parts = 'parts'
+};
+
 export interface PullyOptions {
   /**
    * The default preset to use when downloading a video.
@@ -24,6 +31,11 @@ export interface PullyOptions {
    * Extra presets
    */
   additionalPresets?: Array<Preset>;
+
+  /**
+   * Download mode (defaults to 'merge')
+   */
+  mode?: DownloadMode;
 }
 
 export interface DownloadConfig {
@@ -33,6 +45,7 @@ export interface DownloadConfig {
   template?: string | ((result: VideoResult) => string);
   info?: (info: FormatInfo, cancel: (msg?: string) => void) => void | Promise<any>;
   progress?: (data: ProgressData) => void;
+  mode?: DownloadMode;
 }
 
 export interface InternalDownloadConfig {
@@ -42,6 +55,7 @@ export interface InternalDownloadConfig {
   template: ((result: VideoResult) => string);
   info: (info: FormatInfo, cancel: (msg?: string) => void) => void | Promise<any>;
   progress?: (data: ProgressData) => void;
+  mode: DownloadMode;
 }
 
 export interface DownloadResults {

@@ -11,6 +11,7 @@
     "clean": "rimraf ./dist/**",
     "build": "tsc",
     "test": "tsc && nyc --color -a ava -v",
+    "bench": "tsc && node ./dist/benchmark",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
     "watch": "concurrently npm:watch:*",
     "watch:build": "tsc --watch",
@@ -42,6 +43,7 @@
   },
   "homepage": "https://github.com/JimmyBoh/pully#readme",
   "devDependencies": {
+    "@types/benchmark": "^1.0.31",
     "@types/debug": "^0.0.31",
     "@types/fluent-ffmpeg": "^2.1.8",
     "@types/lodash.template": "^4.4.4",
@@ -49,8 +51,10 @@
     "@types/through": "0.0.29",
     "@types/tmp": "0.0.33",
     "ava": "^0.25.0",
+    "benchmark": "^2.1.4",
     "concurrently": "^4.0.1",
     "coveralls": "^3.0.2",
+    "microtime": "^2.1.8",
     "nyc": "^13.1.0",
     "rimraf": "^2.6.2",
     "typescript": "^3.1.6"
@@ -87,6 +91,7 @@
       "dist/**/*.spec.js",
       "dist/bin/pully.js",
       "dist/debug.js",
+      "dist/benchmark.js",
       "dist/lib/models.js"
     ]
   }

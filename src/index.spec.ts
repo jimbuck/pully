@@ -50,7 +50,7 @@ test(`Pully#download requires a URL`, async (t) => {
   await t.throws(p.download({ url: null }));
 });
 
-test(`Pully#download defaults to 'hd' preset`, async (t) => {
+test.serial(`Pully#download defaults to 'hd' preset`, async (t) => {
   const p = new Pully();
 
   const result = await p.download(testVideo);
@@ -61,7 +61,7 @@ test(`Pully#download defaults to 'hd' preset`, async (t) => {
   t.true(result.path.endsWith('.mp4'));
 });
 
-test(`Pully#download accepts a template string`, async (t) => {
+test.serial(`Pully#download accepts a template string`, async (t) => {
   const p = new Pully();
 
   const result = await p.download({
@@ -75,7 +75,7 @@ test(`Pully#download accepts a template string`, async (t) => {
   t.true(result.path.endsWith(`${result.format.data.videoId} - ${result.format.data.videoTitle}.mp4`));
 });
 
-test(`Pully#download accepts a template function`, async (t) => {
+test.serial(`Pully#download accepts a template function`, async (t) => {
   const p = new Pully();
 
   const result = await p.download({
@@ -92,7 +92,7 @@ test(`Pully#download accepts a template function`, async (t) => {
   t.true(actualPath.endsWith(expectedPathSuffix));
 });
 
-test(`Pully#download accepts preset strings`, async (t) => {
+test.serial(`Pully#download accepts preset strings`, async (t) => {
   const p = new Pully();
 
   const result = await p.download(testVideo, 'mp3');
@@ -103,7 +103,7 @@ test(`Pully#download accepts preset strings`, async (t) => {
   t.true(result.path.endsWith('.mp3'));
 });
 
-test(`Pully#download accepts options hash`, async (t) => {
+test.serial(`Pully#download accepts options hash`, async (t) => {
   const p = new Pully();
 
   const result = await p.download({

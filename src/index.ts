@@ -4,7 +4,7 @@ import { EventEmitter } from 'events';
 import * as debug from 'debug';
 import { template, query, scrubObject, VideoResult, QueryResult } from 'pully-core';
 
-import { Preset, PullyOptions, DownloadConfig, DownloadResults, ProgressData, InternalDownloadConfig } from './lib/models';
+import { Preset, PullyOptions, DownloadConfig, DownloadResults, ProgressData, InternalDownloadConfig, DownloadMode } from './lib/models';
 import { Download } from './lib/download';
 import { Presets, DefaultPresets, prepPreset } from './lib/presets';
 
@@ -12,7 +12,7 @@ const DEFAULT_TEMPLATE = '${videoTitle}__${channelName}';
 
 const log = debug('pully:index');
 
-export { PullyOptions, DownloadConfig, Presets, ProgressData, DownloadResults };
+export { PullyOptions, DownloadConfig, Presets, ProgressData, DownloadResults, DownloadMode };
 
 export declare interface Pully {
   on(event: 'query', listener: (args: QueryResult) => void): this;
@@ -39,7 +39,8 @@ export class Pully extends EventEmitter {
     return results;
   }
   
-  public async download(url: string, preset?: string): Promise<DownloadResults>;
+  public async download(url: string): Promise<DownloadResults>;
+  public async download(url: string, preset: string): Promise<DownloadResults>;
   public async download(options: DownloadConfig): Promise<DownloadResults>;
   public async download(input: string | DownloadConfig, preset?: string): Promise<DownloadResults> {
     const globalStart = Date.now();
@@ -52,7 +53,7 @@ export class Pully extends EventEmitter {
 
     let options = await this._formatConfig(input);
 
-    log(`Download started...`);
+    log(`Download started (strategy: ${options.mode})...`);
     this.emit('downloadstarted', options);
 
     let dlPromise = new Download(options, this).start();
@@ -85,10 +86,13 @@ export class Pully extends EventEmitter {
 
     let output: InternalDownloadConfig = {
       url: input.url,
+      dir: null,
+      preset: null,
       info: input.info || this._config.info || (() => { }),
       template: this._getTemplate(input.template),
-      progress: input.progress
-    } as any;
+      progress: input.progress,
+      mode: input.mode || this._config.mode || DownloadMode.Merge
+    };
 
     // Resolve the directory...
     let specifiedDir = input.dir || this._config.dir;
