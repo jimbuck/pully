@@ -91,7 +91,7 @@ export class Pully extends EventEmitter {
       info: input.info || this._config.info || (() => { }),
       template: this._getTemplate(input.template),
       progress: input.progress,
-      mode: input.mode || this._config.mode || DownloadMode.Merge
+      mode: input.mode || this._config.mode || DownloadMode.Parallel
     };
 
     // Resolve the directory...

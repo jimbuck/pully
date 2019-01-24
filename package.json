@@ -73,7 +73,7 @@
     "mkdirp-promise": "^5.0.1",
     "pully-core": "^0.7.2",
     "sanitize-filename": "^1.6.1",
-    "tmp": "0.0.33",
+    "temp-dir": "^1.0.0",
     "update-notifier": "^2.5.0"
   },
   "ava": {
