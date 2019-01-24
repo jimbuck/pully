@@ -187,23 +187,30 @@ export class Download {
   private _processOutput(outputPath: string, primary: string, secondary: string): Promise<string>;
   private _processOutput(outputPath: string, primary: string, secondary: Readable): Promise<string>;
   private _processOutput(outputPath: string, primary: Readable): Promise<string>;
-  private _processOutput(outputPath: string, primary: string|Readable, secondary?: string|Readable): Promise<string> {
+  private _processOutput(outputPath: string, audioSrc: string|Readable, videoSrc?: string|Readable): Promise<string> {
     let ffmpegCommand = this._createFfmpegCommand();
     
-    if (primary) {
-      ffmpegCommand = ffmpegCommand.input(primary);
-    }
-    
-    if (secondary) {
-      ffmpegCommand = ffmpegCommand.input(secondary);
+    if (this._config.preset.outputFormat) {
+      ffmpegCommand = ffmpegCommand.format(this._config.preset.outputFormat);
     }
 
-    return this._ffmpegSave(ffmpegCommand, outputPath, secondary && typeof secondary === 'string');
+    if (audioSrc) {
+      ffmpegCommand = ffmpegCommand.input(audioSrc);
+      if (!this._config.preset.outputFormat) ffmpegCommand = ffmpegCommand.audioCodec('copy');
+    }
+    
+    if (videoSrc) {
+      ffmpegCommand = ffmpegCommand.input(videoSrc);
+      if (!this._config.preset.outputFormat) ffmpegCommand = ffmpegCommand.videoCodec('copy')
+    }
+
+    return this._ffmpegSave(ffmpegCommand, outputPath, videoSrc && typeof videoSrc === 'string');
   }
 
   private async _getOutputPath(): Promise<string> {
     if (this._config.dir) {
-      let filename = this._config.template(this._format.data) + '.' + this._config.preset.outputFormat;
+      let ext = this._config.preset.outputFormat ? this._config.preset.outputFormat : (this._format.video || this._format.audio).container;
+      let filename = this._config.template(this._format.data) + '.' + ext;
 
       return join(this._config.dir, filename);
     } else {
@@ -236,7 +243,6 @@ export class Download {
   private _createFfmpegCommand(): any {
     return ffmpeg()
       .setFfmpegPath(ffmpegPath)
-      .format(this._config.preset.outputFormat)
       .outputOptions('-metadata', `title=${this._format.data.videoTitle}`)
       .outputOptions('-metadata', `author=${this._format.data.channelName}`).outputOptions('-metadata', `artist=${this._format.data.channelName}`)
       .outputOptions('-metadata', `description=${this._format.data.description}`).outputOptions('-metadata', `comment=${this._format.data.description}`)

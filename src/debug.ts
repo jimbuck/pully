@@ -2,15 +2,15 @@ import { Pully, Presets } from '.';
 
 //const testVideo = 'https://www.youtube.com/watch?v=oVXg7Grp1W8'; // 22s with music (9MB)
 const testVideo = 'https://www.youtube.com/watch?v=aqz-KE-bpKQ'; // Big Buck Bunny, 10:34 4K (? MB)
+const mp3Video = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
 
 (async function () {
   let p = new Pully();
 
   p.download({
-    url: testVideo,
+    url: mp3Video,
     dir: './output',
-    template: '${author} -__- ${title}',
-    preset: Presets.HD,
+    preset: Presets.MP3,
     info: (format, cancel) => {
       console.log('Verify: ' + format.downloadSize);
 

@@ -8,8 +8,9 @@
     "pully": "./dist/bin/pully.js"
   },
   "scripts": {
-    "clean": "rimraf ./dist/**",
+    "clean": "rimraf ./dist/** ./temp/*/*",
     "build": "tsc",
+    "debug": "tsc && node ./dist/debug",
     "test": "tsc && nyc --color -a ava -v",
     "bench": "tsc && node ./dist/benchmark",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
