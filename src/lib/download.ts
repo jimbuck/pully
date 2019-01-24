@@ -91,7 +91,7 @@ export class Download {
     this._emitProgress(); // Emit zero progress...
 
     const path = await this._beginDownload();
-
+    
     this._cleanup();
 
     return { path, format: this._format, duration: (Date.now() - this._start), cancelled: false };
