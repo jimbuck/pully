@@ -1,6 +1,6 @@
 {
   "name": "pully",
-  "version": "2.6.0",
+  "version": "2.7.0",
   "description": "A simple CLI for downloading high quality YouTube videos!",
   "main": "index.js",
   "types": "./dist/index.d.ts",
@@ -8,8 +8,9 @@
     "pully": "./dist/bin/pully.js"
   },
   "scripts": {
-    "clean": "rimraf ./dist/**",
+    "clean": "rimraf ./dist/** ./temp/*/*",
     "build": "tsc",
+    "debug": "tsc && node ./dist/debug",
     "test": "tsc && nyc --color -a ava -v",
     "bench": "tsc && node ./dist/benchmark",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
@@ -72,7 +73,7 @@
     "mkdirp-promise": "^5.0.1",
     "pully-core": "^0.7.2",
     "sanitize-filename": "^1.6.1",
-    "tmp": "0.0.33",
+    "temp-dir": "^1.0.0",
     "update-notifier": "^2.5.0"
   },
   "ava": {

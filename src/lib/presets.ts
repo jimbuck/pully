@@ -27,7 +27,6 @@ function extendPreset(base: Preset, overrides: Preset): Preset {
 
 const baseVideoPreset: Preset = {
   name: null,
-  outputFormat: 'mp4',
   maxResolution: Number.MAX_SAFE_INTEGER,
   maxFps: 60,
   videoFilters: [resolutionFilter, fpsFilter],
@@ -38,7 +37,6 @@ const baseVideoPreset: Preset = {
 
 export const baseAudioPreset: Preset = {
   name: null,
-  outputFormat: 'mp3',
   audioFilters: [audioBitrateFilter],
   audioSort: [audioBitrateSort],
   maxAudioBitrate: 128
@@ -85,6 +83,7 @@ const hfrPreset: Preset = {
 
 const mp3Preset: Preset = {
   name: 'mp3',
+  outputFormat: 'mp3',
   maxAudioBitrate: Number.MAX_SAFE_INTEGER
 };
 

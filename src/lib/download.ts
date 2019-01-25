@@ -1,5 +1,5 @@
-import { createWriteStream } from 'fs';
-import { join, dirname } from 'path';
+import { createWriteStream, unlinkSync as deleteFile } from 'fs';
+import { join as joinPath, dirname } from 'path';
 import { Readable, Transform } from 'stream';
 import { EventEmitter } from 'events';
 
@@ -8,8 +8,7 @@ const throttle = require('lodash.throttle');
 const mkdirp = require('mkdirp-promise');
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 import * as ffmpeg from 'fluent-ffmpeg';
-import { file as createTempPath, setGracefulCleanup } from 'tmp';
-setGracefulCleanup();
+const tempRoot = joinPath(require('temp-dir'), 'pully');
 
 const log = debug('pully:download');
 
@@ -19,9 +18,8 @@ import { getBestFormats } from './analyzer';
 import { Speedometer } from '../utils/speedometer';
 import { toHumanTime } from '../utils/human';
 
-const TEMP_FILE_PREFIX = 'pully-';
-const TEMP_AUDIO_EXT = '.m4a';
-const TEMP_VIDEO_EXT = '.mp4';
+const TEMP_AUDIO_EXT = 'm4a';
+const TEMP_VIDEO_EXT = 'mp4';
 
 export class Download {
  
@@ -41,6 +39,8 @@ export class Download {
 
   private _emitProgress: (indeterminate?: boolean) => void;
   private _speedometer: Speedometer;
+
+  private _tempFiles: string[] = [];
 
   constructor(
     private _config: InternalDownloadConfig,
@@ -91,6 +91,8 @@ export class Download {
     this._emitProgress(); // Emit zero progress...
 
     const path = await this._beginDownload();
+    
+    this._cleanup();
 
     return { path, format: this._format, duration: (Date.now() - this._start), cancelled: false };
   }
@@ -187,28 +189,31 @@ export class Download {
   private _processOutput(outputPath: string, primary: string, secondary: string): Promise<string>;
   private _processOutput(outputPath: string, primary: string, secondary: Readable): Promise<string>;
   private _processOutput(outputPath: string, primary: Readable): Promise<string>;
-  private _processOutput(outputPath: string, primary: string|Readable, secondary?: string|Readable): Promise<string> {
+  private _processOutput(outputPath: string, audioSrc: string|Readable, videoSrc?: string|Readable): Promise<string> {
     let ffmpegCommand = this._createFfmpegCommand();
     
-    if (primary) {
-      ffmpegCommand = ffmpegCommand.input(primary);
-    }
-    
-    if (secondary) {
-      ffmpegCommand = ffmpegCommand.input(secondary);
+    if (this._config.preset.outputFormat) {
+      ffmpegCommand = ffmpegCommand.format(this._config.preset.outputFormat);
     }
 
-    return this._ffmpegSave(ffmpegCommand, outputPath, secondary && typeof secondary === 'string');
+    if (audioSrc) {
+      ffmpegCommand = ffmpegCommand.input(audioSrc);
+      if (!this._config.preset.outputFormat) ffmpegCommand = ffmpegCommand.audioCodec('copy');
+    }
+    
+    if (videoSrc) {
+      ffmpegCommand = ffmpegCommand.input(videoSrc);
+      if (!this._config.preset.outputFormat) ffmpegCommand = ffmpegCommand.videoCodec('copy')
+    }
+
+    return this._ffmpegSave(ffmpegCommand, outputPath, videoSrc && typeof videoSrc === 'string');
   }
 
   private async _getOutputPath(): Promise<string> {
-    if (this._config.dir) {
-      let filename = this._config.template(this._format.data) + '.' + this._config.preset.outputFormat;
-
-      return join(this._config.dir, filename);
-    } else {
-      return await this._getTempPath('.' + this._config.preset.outputFormat);
-    }
+    let ext = this._config.preset.outputFormat ? this._config.preset.outputFormat : (this._format.video || this._format.audio).container;
+    let filename = this._config.template(this._format.data) + '.' + ext;
+    let outDir = this._config.dir ? this._config.dir : tempRoot;
+    return joinPath(outDir, filename);
   }
 
   private _createProgressTracker(): Transform {
@@ -221,22 +226,19 @@ export class Download {
     });
   }
 
-  private _getTempPath(suffix: string): Promise<string> {
-    return new Promise((resolve, reject) => {
-      createTempPath({ prefix: TEMP_FILE_PREFIX, postfix: suffix }, (err, path) => {
-        if (err) {
-          return reject(err);
-        }
+  private async _getTempPath(suffix: string): Promise<string> {
+    let tempPath = joinPath(tempRoot, `${this._format.data.videoId}_${this._config.preset.name}.${suffix}`);
 
-        resolve(path);
-      });
-    });
+    await mkdirp(tempRoot);
+
+    this._tempFiles.push(tempPath);
+
+    return tempPath;
   }
 
   private _createFfmpegCommand(): any {
     return ffmpeg()
       .setFfmpegPath(ffmpegPath)
-      .format(this._config.preset.outputFormat)
       .outputOptions('-metadata', `title=${this._format.data.videoTitle}`)
       .outputOptions('-metadata', `author=${this._format.data.channelName}`).outputOptions('-metadata', `artist=${this._format.data.channelName}`)
       .outputOptions('-metadata', `description=${this._format.data.description}`).outputOptions('-metadata', `comment=${this._format.data.description}`)
@@ -259,5 +261,15 @@ export class Download {
           .save(path);
       });
     });
+  }
+
+  private _cleanup(): void {
+    try {
+      this._tempFiles.forEach(tempFile => {
+        try {
+          deleteFile(tempFile);
+        } catch { }
+      });
+    } catch { }
   }
 }
