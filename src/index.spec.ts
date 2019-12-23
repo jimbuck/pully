@@ -1,6 +1,6 @@
 import { unlinkSync as deleteFileSync } from 'fs';
 
-import { test } from 'ava';
+import test from 'ava';
 
 import { Pully, Presets } from './index';
 import { join } from 'path';
@@ -45,9 +45,9 @@ test(`Pully#download requires a URL`, async (t) => {
 
   t.plan(3);
 
-  await t.throws(p.download(null));
-  await t.throws(p.download(null, 'hd'));
-  await t.throws(p.download({ url: null }));
+  await t.throwsAsync(p.download(null));
+  await t.throwsAsync(p.download(null, 'hd'));
+  await t.throwsAsync(p.download({ url: null }));
 });
 
 test.serial(`Pully#download defaults to 'hd' preset`, async (t) => {

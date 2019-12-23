@@ -89,7 +89,7 @@
       "program": "${workspaceRoot}/node_modules/ava/profile.js",
       "args": [
         "--serial",
-        "${workspaceRoot}/dist/index.spec.js"
+        "${workspaceRoot}/dist/lib/analyzer.spec.js"
       ],
       "outFiles": ["${workspaceRoot}/dist/**/*.js"],
       "sourceMaps": true,

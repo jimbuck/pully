@@ -1,9 +1,8 @@
 import { Preset, FormatInfo } from './models';
 import { query, MediaFormat } from 'pully-core';
-import { format } from 'url';
 
-const VIDEO_FORMAT = 'video/mp4';
-const AUDIO_FORMAT = 'audio/mp4';
+const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm'];
+const ALLOWED_AUDIO_TYPES = ['audio/mp4', 'audio/webm'];
 
 export async function getBestFormats(url: string, preset: Preset): Promise<FormatInfo> {
   let downloadSize = 0;
@@ -39,7 +38,7 @@ export async function getBestFormats(url: string, preset: Preset): Promise<Forma
 function _createVideoFilter(preset: Preset) {
   return (format: MediaFormat) => {
 
-    if (!format.type || !format.type.includes(VIDEO_FORMAT)) {
+    if (!format.type || !ALLOWED_VIDEO_TYPES.includes(format.type)) {
       return false;
     }
 
@@ -76,7 +75,7 @@ function _createVideoCompare(preset: Preset): (a: MediaFormat, b: MediaFormat) =
 function _createAudioFilter(preset: Preset) {
   return (format: MediaFormat) => {
 
-    if (!format.type || !format.type.includes(AUDIO_FORMAT)) {
+    if (!format.type || !ALLOWED_AUDIO_TYPES.includes(format.type)) {
       return false;
     }
 

@@ -81,12 +81,12 @@ function ytldCorBenchmark() {
     fn: async function (p: BenchResolver) {
       const mainOutput = resolvePath(__dirname, `../temp/ytdl-core/output_${i++}.mp4`);
 
-      ytdl(videoToDownload, { filter: format => format.itag === '140' })
+      ytdl(videoToDownload, { filter: format => format.itag === 140 })
         // Write audio to file since ffmpeg supports only one input stream.
         .pipe(createWriteStream(audioOutput))
         .on('finish', () => {
           ffmpeg()
-            .input(ytdl(videoToDownload, { filter: format => format.itag === '299' }))
+            .input(ytdl(videoToDownload, { filter: format => format.itag === 299 }))
             .videoCodec('copy')
             .input(audioOutput)
             .audioCodec('copy')

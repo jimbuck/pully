@@ -1,4 +1,4 @@
-import { test } from 'ava';
+import test from 'ava';
 const chalk = require('chalk');
 let logUpdate = require('log-update');
 

@@ -189,12 +189,11 @@ function swapArgs(origArg: string, newArg: string): void {
 }
 
 function summarizeFormat(format: FormatInfo): string {
-  let videoResolution = (format.video && (format.video.resolution || format.video.size));
+  let videoResolution = (format.video && format.video.resolution);
   let videoFps = (format.video && format.video.fps) || EMPTY_STRING;
-  let audioEncoding = (format.audio && format.audio.audioEncoding) || EMPTY_STRING;
-  let audioBitrate = (format.audio && format.audio.audioBitrate) || EMPTY_STRING;
+  let audioBitrate = (format.audio && format.audio.bitrate) || EMPTY_STRING;
 
-  let summary = `${audioBitrate}kbps ${audioEncoding}`;
+  let summary = `${audioBitrate}kbps`;
 
   if (videoResolution) {
     summary = `${videoResolution}p${videoFps} with ${summary}`;

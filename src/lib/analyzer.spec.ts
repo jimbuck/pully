@@ -1,4 +1,4 @@
-import { test, TestContext } from 'ava';
+import test, { ExecutionContext } from 'ava';
 
 import { getBestFormats } from './analyzer';
 import { Presets, DefaultPresets, prepPreset } from './presets';
@@ -12,7 +12,7 @@ test(`Analyzer#getRequiredFormats retrieves best formats for SD`, forBestFormats
 test(`Analyzer#getRequiredFormats retrieves best formats for LD`, forBestFormats, Presets.LD);
 test(`Analyzer#getRequiredFormats retrieves best formats for mp3`, forBestFormats, Presets.MP3);
 
-async function forBestFormats(t: TestContext, presetName: string): Promise<void> {
+async function forBestFormats(t: ExecutionContext, presetName: string): Promise<void> {
     let preset = prepPreset(DefaultPresets.find(p => p.name === presetName));
     const format = await getBestFormats('https://www.youtube.com/watch?v=oVXg7Grp1W8', preset);
 
@@ -27,7 +27,7 @@ async function forBestFormats(t: TestContext, presetName: string): Promise<void>
 
     if (preset.audioSort) {
         t.truthy(format.audio);
-        t.true(format.audio.audioBitrate <= preset.maxAudioBitrate);
+        t.true(format.audio.bitrate <= preset.maxAudioBitrate);
     } else {
         skipAudio = true;
     }

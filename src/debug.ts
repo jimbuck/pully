@@ -1,21 +1,21 @@
 import { Pully, Presets } from '.';
 
-//const testVideo = 'https://www.youtube.com/watch?v=oVXg7Grp1W8'; // 22s with music (9MB)
-const testVideo = 'https://www.youtube.com/watch?v=aqz-KE-bpKQ'; // Big Buck Bunny, 10:34 4K (? MB)
+const testVideo = 'https://www.youtube.com/watch?v=oVXg7Grp1W8'; // 22s with music (9MB)
+//const testVideo = 'https://www.youtube.com/watch?v=aqz-KE-bpKQ'; // Big Buck Bunny, 10:34 4K (? MB)
 const mp3Video = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
 
 (async function () {
   let p = new Pully();
 
   p.download({
-    url: mp3Video,
+    url: testVideo,
     dir: './output',
-    preset: Presets.MP3,
+    preset: Presets.FourK,
     info: (format, cancel) => {
       console.log('Verify: ' + format.downloadSize);
 
-      // Limit download to ~3MB...    
-      if (format.downloadSize > 3000000) {
+      // Limit download to ~50MB...
+      if (format.downloadSize > 50000000) {
         cancel();
       }
     },

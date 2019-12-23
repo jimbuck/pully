@@ -8,7 +8,7 @@ function resolutionFilter (format: MediaFormat, options: Preset): boolean {
   return !options.maxResolution || format.resolution <= options.maxResolution;
 }
 function audioBitrateFilter (format: MediaFormat, options: Preset) {
-  return !options.maxAudioBitrate || format.audioBitrate <= options.maxAudioBitrate;
+  return !options.maxAudioBitrate || format.bitrate <= options.maxAudioBitrate;
 }
 
 function fpsSort(a: MediaFormat, b: MediaFormat): number {
@@ -18,7 +18,7 @@ function resolutionSort(a: MediaFormat, b: MediaFormat): number {
   return (b.resolution || 0) - (a.resolution || 0);
 }
 function audioBitrateSort(a: MediaFormat, b: MediaFormat): number {
-  return (a.audioBitrate || 0) - (b.audioBitrate || 0);
+  return (a.bitrate || 0) - (b.bitrate || 0);
 }
 
 function extendPreset(base: Preset, overrides: Preset): Preset {
@@ -32,7 +32,8 @@ const baseVideoPreset: Preset = {
   videoFilters: [resolutionFilter, fpsFilter],
   videoSort: [resolutionSort, fpsSort],
   audioSort: [audioBitrateSort],
-  maxAudioBitrate: 128
+  maxAudioBitrate: 128,
+  outputFormat: 'mp4' // TODO: Test this with different video types.
 };
 
 export const baseAudioPreset: Preset = {
