@@ -38,7 +38,7 @@ export async function getBestFormats(url: string, preset: Preset): Promise<Forma
 function _createVideoFilter(preset: Preset) {
   return (format: MediaFormat) => {
 
-    if (!format.type || !ALLOWED_VIDEO_TYPES.includes(format.type)) {
+    if (!format.raw.mimeType || !ALLOWED_VIDEO_TYPES.includes(format.raw.mimeType)) {
       return false;
     }
 
@@ -75,7 +75,7 @@ function _createVideoCompare(preset: Preset): (a: MediaFormat, b: MediaFormat) =
 function _createAudioFilter(preset: Preset) {
   return (format: MediaFormat) => {
 
-    if (!format.type || !ALLOWED_AUDIO_TYPES.includes(format.type)) {
+    if (!format.raw.mimeType || !ALLOWED_AUDIO_TYPES.includes(format.raw.mimeType)) {
       return false;
     }
 
